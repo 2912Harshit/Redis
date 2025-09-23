@@ -15,12 +15,15 @@
 #include<unordered_map>
 using namespace std;
 string token_to_resp_bulk(string token){
+  string res="";
   if(token.empty()){
-    return "$-1\r\n";
+    res= "$-1\r\n";
   }else if(token=="OK"){
-    return "+OK\r\n";
+    res= "+OK\r\n";
   }
-  return "$"+to_string(token.size())+"\r\n"+token+"\r\n";
+  else res= "$"+to_string(token.size())+"\r\n"+token+"\r\n";
+  cout<<res<<endl;
+  return res;
 }
 void send_string_wrap(int client_fd,string msg){
   string resp_bulk=token_to_resp_bulk(msg);
