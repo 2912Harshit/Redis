@@ -50,6 +50,7 @@ void handleResponse(int client_fd){
         response.append(parsed_request[i]);
         response.append("\r\n");
       }
+      cout<<response<<endl;
       write(client_fd,response.c_str(),response.size());
     }
   }
