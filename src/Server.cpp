@@ -35,6 +35,7 @@ void handleResponse(int client_fd){
     }
 
     parsed_request.push_back(request.substr(start));
+    for(auto str:parsed_request)cout<<str<<endl;
     string command=parsed_request[2];
     string response="";
     if(command=="PING"){
