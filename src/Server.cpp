@@ -18,8 +18,8 @@ string token_to_resp_bulk(string token){
   string res="";
   if(token.empty()){
     res= "$-1\r\n";
-  }else if(token=="OK"){
-    res= "+OK\r\n";
+  }else if(token=="OK" || token=="PONG"){
+    res="+"+token+"\r\n";
   }
   else res= "$"+to_string(token.size())+"\r\n"+token+"\r\n";
   cout<<res<<endl;
