@@ -25,10 +25,16 @@ void handleResponse(int client_fd){
     }
     string request(buffer);
     vector<string>parsed_request;
-    for(string token:request | views::split("\r\n")){
-      string s(token.begin(),token.end());
-      parsed_request.push_back(s);
+    size_t start = 0;
+    size_t end = request.find("\r\n");
+
+    while (end != std::string::npos) {
+        parsed_request.push_back(request.substr(start, end - start));
+        start = end + 1;
+        end = request.find(',', start);
     }
+
+    parsed_request.push_back(request.substr(start));
     string command=parsed_request[2];
     string response;
     if(command=="PING"){
