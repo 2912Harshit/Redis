@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     int bytes_read=read(client_fd,buffer,sizeof(buffer));
     if(bytes_read<0){
       cerr<<"failed to read\n";
-      return 1;
+      break;
     }
     string request(buffer);
     if(request.find("PING")!=string::npos){
