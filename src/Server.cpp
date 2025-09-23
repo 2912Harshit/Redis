@@ -31,7 +31,7 @@ void handleResponse(int client_fd){
     while (end != std::string::npos) {
         parsed_request.push_back(request.substr(start, end - start));
         start = end + 1;
-        end = request.find(',', start);
+        end = request.find("\r\n", start);
     }
 
     parsed_request.push_back(request.substr(start));
