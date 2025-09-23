@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include<thread>
+#include <algorithm>
+#include <cctype>
 using namespace std;
 
 void handleResponse(int client_fd){
@@ -23,6 +25,7 @@ void handleResponse(int client_fd){
     if(request.find("PING")!=string::npos){
       string response="+PONG\r\n";
       write(client_fd,response.c_str(),response.size());
+      continue;
     }
     string command=request;
     std::transform(command.begin(), command.end(), command.begin(),
