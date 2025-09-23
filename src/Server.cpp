@@ -17,6 +17,7 @@ void handleResponse(int client_fd){
     if(bytes_read<=0){
       cout<<"failed to read payload."<<endl;
       close(client_fd);
+      return;
     }
     string request(buffer);
     string response="+PONG\r\n";
