@@ -20,7 +20,7 @@ string token_to_resp_bulk(string token){
   }else if(token=="OK"){
     return "+OK\r\n";
   }
-  return "$"+"\r\n"<<to_string(token.size())+token+"\r\n";
+  return "$"+to_string(token.size())+"\r\n"+token+"\r\n";
 }
 void send_string_wrap(int client_fd,string msg){
   string resp_bulk=token_to_resp_bulk(msg);
