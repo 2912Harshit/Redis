@@ -47,6 +47,7 @@ void handleResponse(int client_fd){
       cout<<command<<endl;
     if(command=="echo"){
       for(int i=3;i<parsed_request.size();i++){
+        cout<<parsed_request[i]<<endl;
         response.append(parsed_request[i]);
         response.append("\r\n");
       }
