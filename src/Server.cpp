@@ -36,7 +36,7 @@ void handleResponse(int client_fd){
 
     parsed_request.push_back(request.substr(start));
     string command=parsed_request[2];
-    string response;
+    string response="";
     if(command=="PING"){
       response="+PONG\r\n";
       write(client_fd,response.c_str(),response.size());
@@ -45,7 +45,10 @@ void handleResponse(int client_fd){
     transform(command.begin(),command.end(),command.begin(),
                   [](unsigned char c){return tolower(c);});
     if(command=="echo"){
-      response=parsed_request[4];
+      for(int i=3;i<parsed_request.size();i++){
+        response.append(parsed_request[i]);
+        response.append("\r\n");
+      }
       write(client_fd,response.c_str(),response.size());
     }
   }
