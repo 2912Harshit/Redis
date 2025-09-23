@@ -10,6 +10,8 @@
 #include<thread>
 #include <algorithm>
 #include <cctype>
+#include<vector>
+#include<ranges>
 using namespace std;
 
 void handleResponse(int client_fd){
@@ -22,20 +24,22 @@ void handleResponse(int client_fd){
       return;
     }
     string request(buffer);
-    cout<<"request : "<<request<<endl;
-    if(request.find("PING")!=string::npos){
-      string response="+PONG\r\n";
+    vector<string>parsed_request;
+    for(string token:request | views::split("\r\n")){
+      string s(token.begin(),token.end());
+      parsed_request.push_back(s);
+    }
+    string command=parsed_request[2];
+    string response;
+    if(command=="PING"){
+      response="+PONG\r\n";
       write(client_fd,response.c_str(),response.size());
       continue;
     }
-    std::transform(request.begin(), request.end(), request.begin(),
-                   [](unsigned char c){ return std::tolower(c); });
-    cout<<"request : "<<request<<endl;
-    if(request.find("echo")!=string::npos){
-      bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
-      bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
-      string response(buffer);
-      cout<<"response : "<<response<<endl;
+    transform(command.begin(),command.end(),command.begin(),
+                  [](unsigned char c){return tolower(c);});
+    if(command=="echo"){
+      response=parsed_request[4];
       write(client_fd,response.c_str(),response.size());
     }
   }
