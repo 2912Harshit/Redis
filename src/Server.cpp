@@ -18,8 +18,9 @@ void handleResponse(int client_fd){
       cout<<"failed to read payload."<<endl;
       close(client_fd);
     }
-    string response(buffer);
-    if(response.find("PING")!=string::npos){
+    string request(buffer);
+    string response="+PING\r\n";
+    if(request.find("PING")!=string::npos){
       write(client_fd,response.c_str(),response.size());
     }
   }
