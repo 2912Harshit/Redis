@@ -20,6 +20,7 @@ void handleResponse(int client_fd){
       return;
     }
     string request(buffer);
+    cout<<request<<endl;
     string response="+PONG\r\n";
     if(request.find("PING")!=string::npos){
       write(client_fd,response.c_str(),response.size());
