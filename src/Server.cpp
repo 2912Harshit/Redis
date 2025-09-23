@@ -34,7 +34,7 @@ void handleResponse(int client_fd){
         end = request.find("\r\n", start);
     }
 
-    parsed_request.push_back(request.substr(start));
+    // parsed_request.push_back(request.substr(start));
     for(auto str:parsed_request)cout<<str<<endl;
     string command=parsed_request[2];
     string response="";
