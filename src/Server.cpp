@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+using namespace std;
 
 int main(int argc, char **argv) {
   // Flush after every std::cout / std::cerr
@@ -52,8 +53,12 @@ int main(int argc, char **argv) {
 
   // Uncomment this block to pass the first stage
   // 
-  accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+  int client_fd=accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+
   std::cout << "Client connected\n";
+  string response="+PONG/r/n";
+  send(client_fd,response.c_str(),response.size(),0);
+  close(client_fd);
   
   close(server_fd);
 
