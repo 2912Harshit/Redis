@@ -30,6 +30,7 @@ void handleResponse(int client_fd){
     }
     std::transform(request.begin(), request.end(), request.begin(),
                    [](unsigned char c){ return std::tolower(c); });
+    cout<<"request : "<<request<<endl;
     if(request.find("echo")!=string::npos){
       bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
       bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
