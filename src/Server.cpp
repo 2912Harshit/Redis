@@ -28,12 +28,13 @@ void handleResponse(int client_fd){
       write(client_fd,response.c_str(),response.size());
       continue;
     }
-    string command=request;
-    std::transform(command.begin(), command.end(), command.begin(),
+    std::transform(request.begin(), request.end(), request.begin(),
                    [](unsigned char c){ return std::tolower(c); });
-    if(command.find("echo")!=string::npos){
+    if(request.find("echo")!=string::npos){
+      bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
       bytes_read=recv(client_fd,buffer,sizeof(buffer)-1,0);
       string response(buffer);
+      cout<<"response : "<<response<<endl;
       write(client_fd,response.c_str(),response.size());
     }
   }
