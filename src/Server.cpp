@@ -12,8 +12,21 @@
 #include <cctype>
 #include<vector>
 #include<ranges>
+#include<unordered_map>
 using namespace std;
-
+string token_to_resp_bulk(string token){
+  if(token.empty()){
+    return "$-1\r\n";
+  }else if(token=="OK"){
+    return "+OK\r\n";
+  }
+  return "$"+to_string(token.size())+token+"\r\n";
+}
+void send_string_wrap(int client_fd,string msg){
+  string resp_bulk=token_to_resp_bulk(msg);
+  send(client_fd,resp_bulk.c_str(),resp_bulk.size(),0);
+}
+unordered_map<string,string>kv;
 void handleResponse(int client_fd){
   char buffer[1024];
   while(true){
@@ -33,28 +46,23 @@ void handleResponse(int client_fd){
         start = end + 2;
         end = request.find("\r\n", start);
     }
-
     // parsed_request.push_back(request.substr(start));
-    for(auto str:parsed_request)cout<<str<<endl;
     string command=parsed_request[2];
     string response="";
-    if(command=="PING"){
-      response="+PONG\r\n";
-      write(client_fd,response.c_str(),response.size());
-      continue;
-    }
     transform(command.begin(),command.end(),command.begin(),
                   [](unsigned char c){return tolower(c);});
-      cout<<command<<endl;
-    if(command=="echo"){
-      cout<<parsed_request.size()<<endl;
-      for(int i=3;i<parsed_request.size();i++){
-        cout<<parsed_request[i]<<endl;
-        response.append(parsed_request[i]);
-        response.append("\r\n");
-      }
-      cout<<response<<endl;
-      write(client_fd,response.c_str(),response.size());
+    if(command=="ping"){
+      send_string_wrap(client_fd,"PONG");
+    }else if(command=="echo"){
+        send_string_wrap(client_fd,parsed_request[4]);
+    }else if(command=="set"){
+      string key=parsed_request[4];
+      string value=parsed_request[6];
+      kv[key]=value;
+      send_string_wrap(client_fd,"OK");
+    }else if(command=="get"){
+      string key=parsed_request[4];
+      if(kv.count(key))send_string_wrap(client_fd,kv[key]);
     }
   }
 }
