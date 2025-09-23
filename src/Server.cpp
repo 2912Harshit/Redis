@@ -19,7 +19,7 @@ void handleResponse(int client_fd){
       close(client_fd);
     }
     string request(buffer);
-    string response="+PING\r\n";
+    string response="+PONG\r\n";
     if(request.find("PING")!=string::npos){
       write(client_fd,response.c_str(),response.size());
     }
