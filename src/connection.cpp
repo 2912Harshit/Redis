@@ -82,7 +82,7 @@ void handleResponse(int client_fd)
       if (!value.empty())
         send_bulk_string(client_fd, value);
       else
-        send_null_string(client_fd);
+        send_null_bulk_string(client_fd);
     }
     else if (command == "rpush")
     {
@@ -108,8 +108,7 @@ void handleResponse(int client_fd)
         send_array(client_fd, lists[list_key], start, end);
       }
       else{
-        string resp_array="*0\r\n";
-        send(client_fd,resp_array.c_str(),resp_array.size(),0);
+        send_empty_array(client_fd);
       }
 
 
@@ -150,7 +149,7 @@ void handleResponse(int client_fd)
       else if (key_exists && no_of_removals > 1)
         handle_multiple_lpop(client_fd, key, no_of_removals);
       else
-        send_null_string(client_fd);
+        send_null_bulk_string(client_fd);
     }
     else if(command=="blpop"){
       string key=parsed_request[1];

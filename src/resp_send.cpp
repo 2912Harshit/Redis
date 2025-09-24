@@ -27,7 +27,7 @@ void send_integer(int client_fd, int msg)
   send(client_fd, resp_simple.c_str(), resp_simple.size(), 0);
 }
 
-void send_null_string(int client_fd)
+void send_null_bulk_string(int client_fd)
 {
   string resp_simple = "$-1\r\n";
   send(client_fd, resp_simple.c_str(), resp_simple.size(), 0);
@@ -42,5 +42,9 @@ void send_array(int client_fd, deque<string> &list, int start, int end)
   string resp_array = create_resp_array(client_fd, list, start, end);
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
-
+void send_empty_array(int client_fd)
+{
+  string resp_array="*0\r\n";
+  send(client_fd,resp_array.c_str(),resp_array.size(),0);
+}
 
