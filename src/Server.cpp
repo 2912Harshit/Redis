@@ -41,7 +41,7 @@ void start_expiry_cleaner(){
 }
 
 int handle_rpush(vector<string>&parsed_request,string key){
-  // lock_guard<mutex>lock1(lists_mutex);
+  lock_guard<mutex>lock1(lists_mutex);
   for(int i=2;i<parsed_request.size();i++){
     lists[key].push_back(parsed_request[i]);
   }
