@@ -13,7 +13,29 @@
 #include<vector>
 #include<ranges>
 #include<unordered_map>
+#include<mutex>
 using namespace std;
+
+unordered_map<string,string>kv;
+mutex kv_mutex;
+
+void set_key_value(string key,string value){
+    lock_guard<mutex>lock(kv_mutex);
+    kv[key]=value;
+}
+
+void remove_key(string key){
+    lock_guard<mutex>lock(kv_mutex);
+    kv.erase(key);
+}
+
+void set_timeout(function<void(string)>remove_key,int delayMs,string key){
+  thread([remove_key,delayMs,key](){
+    this_thread::sleep_for(chrono::milliseconds(delayMs));
+    remove_key(key);
+  }).detach();
+}
+
 string token_to_resp_bulk(string token){
   string res="";
   if(token.empty()){
@@ -22,14 +44,14 @@ string token_to_resp_bulk(string token){
     res="+"+token+"\r\n";
   }
   else res= "$"+to_string(token.size())+"\r\n"+token+"\r\n";
-  cout<<res<<endl;
   return res;
 }
+
+
 void send_string_wrap(int client_fd,string msg){
   string resp_bulk=token_to_resp_bulk(msg);
   send(client_fd,resp_bulk.c_str(),resp_bulk.size(),0);
 }
-unordered_map<string,string>kv;
 void handleResponse(int client_fd){
   char buffer[1024];
   while(true){
@@ -61,7 +83,10 @@ void handleResponse(int client_fd){
     }else if(command=="set"){
       string key=parsed_request[4];
       string value=parsed_request[6];
-      kv[key]=value;
+      set_key_value(key,value);
+      if(parsed_request.size()>7){
+        for(string str:parsed_request)cout<<str<<" ";
+      }
       send_string_wrap(client_fd,"OK");
     }else if(command=="get"){
       string key=parsed_request[4];
