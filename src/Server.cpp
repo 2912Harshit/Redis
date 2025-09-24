@@ -14,6 +14,7 @@
 #include<ranges>
 #include<unordered_map>
 #include<mutex>
+#include<functional>
 using namespace std;
 
 unordered_map<string,string>kv;
