@@ -152,10 +152,10 @@ void handle_blpop(int client_fd,string &key,int time){
   unique_lock<mutex>lock(lists_mutex);
   if(lists[key].empty()){
     condition_variable cv;
-    auto& cv=clients_cvs[client_fd];
+    clients_cvs[client_fd];
     blocked_clients[key].push_back(client_fd);
     auto deadline=chrono::steady_clock::now()+chrono::seconds(time);
-    bool list_empty=cv.wait_until(lock,deadline,[&](){return lists[key].empty();});
+    bool list_empty=clients_cvs[client_fd].wait_until(lock,deadline,[&](){return lists[key].empty();});
     if(list_empty){
       send_null_array(client_fd);
       return;
