@@ -18,24 +18,48 @@
 using namespace std;
 
 unordered_map<string,string>kv;
-mutex kv_mutex;
+unordered_map<string,chrono::steady_clock::time_point>expiry_map;
+mutex kv_mutex,expiry_map_mutex;
+void start_expiry_cleaner(){
+  thread([](){
+    while(true){
+      lock_guard<mutex>lock1(kv_mutex);
+      lock_guard<mutex>lock2(expiry_map_mutex);
+      auto now=chrono::steady_clock::now();
+      for(auto it=expiry_map.begin();it!=expiry_map.end();){
+        if(now>=it->second){
+          kv.erase(it->first);
+          it=expiry_map.erase(it);
+        }else ++it;
+      }
+      this_thread::sleep_for(chrono::milliseconds(100));
+    }
+  }).detach();
+}
 
-void set_key_value(string key,string value){
-    lock_guard<mutex>lock(kv_mutex);
+void set_key_value(string key,string value,int delay_time){
+    lock_guard<mutex>lock1(kv_mutex);
+    lock_guard<mutex>lock2(expiry_map_mutex);
     kv[key]=value;
+    
+    if(delay_time!=-1){
+      expiry_map[key]=chrono::steady_clock::now()+chrono::milliseconds(delay_time);
+    }else if(expiry_map.count(key))expiry_map.erase(key);
 }
 
 void remove_key(string key){
-    lock_guard<mutex>lock(kv_mutex);
+    lock_guard<mutex>lock1(kv_mutex);
+    lock_guard<mutex>lock2(expiry_map_mutex);
     kv.erase(key);
+    expiry_map.erase(key);
 }
 
-void set_timeout(function<void(string)>remove_key,int delayMs,string key){
-  thread([remove_key,delayMs,key](){
-    this_thread::sleep_for(chrono::milliseconds(delayMs));
-    remove_key(key);
-  }).detach();
-}
+// void set_timeout(int delayMs,string key){
+//   thread([delayMs,key](){
+//     this_thread::sleep_for(chrono::milliseconds(delayMs));
+//     remove_key(key);
+//   }).detach();
+// }
 
 string token_to_resp_bulk(string token){
   string res="";
@@ -78,10 +102,6 @@ void handleResponse(int client_fd){
         start = end + 2;
         end = request.find("\r\n", start);
     }
-
-    // parsed_request.push_back(request.substr(start));
-    // for(string str:parsed_request)cout<<str<<" ";
-    // cout<<endl;
     string command=parsed_request[0];
     to_lowercase(command);
     string response="";
@@ -92,20 +112,26 @@ void handleResponse(int client_fd){
     }else if(command=="set"){
       string key=parsed_request[1];
       string value=parsed_request[2];
-      set_key_value(key,value);
+      int delay_time=-1;
       if(parsed_request.size()>3){
         string optional_arg=parsed_request[3];
         to_lowercase(optional_arg);
         if(optional_arg=="px" || optional_arg=="ex"){
-          int delay_time=stoi(parsed_request[4]);
+          delay_time=stoi(parsed_request[4]);
           if(optional_arg=="ex")delay_time*=1000;
-          set_timeout(remove_key,delay_time,key);
         }
       }
+      set_key_value(key,value,delay_time);
       send_string_wrap(client_fd,"OK");
     }else if(command=="get"){
       string key=parsed_request[1];
-      if(kv.count(key))send_string_wrap(client_fd,kv[key]);
+      if(kv.count(key)){
+        if(!expiry_map.count(key) || chrono::steady_clock::now()<expiry_map[key])send_string_wrap(client_fd,kv[key]);
+        else{
+          remove_key(key);
+          send_string_wrap(client_fd,"");
+        }
+      }
       else send_string_wrap(client_fd,"");
     }
   }
@@ -155,7 +181,7 @@ int main(int argc, char **argv) {
 
   // Uncomment this block to pass the first stage
   // 
-
+  start_expiry_cleaner();
   while(true){
     int client_fd=accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
     std::cout << "Client connected : "<<client_fd<<"\n";
