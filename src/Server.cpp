@@ -115,19 +115,28 @@ void to_lowercase(string &str){
                   [](unsigned char c){return tolower(c);});
     
 }
+string create_simple_string(string &msg){
+  return "+"+msg+"\r\n";
+}
+string create_bulk_string(string &msg){
+  return "$"+to_string(msg.size())+"\r\n"+msg+"\r\n";
+}
+string create_integer(int &msg){
+  return ":"+to_string(msg)+"\r\n";
+}
 void send_simple_string(int client_fd,string msg){
   string resp_simple;
-  resp_simple="+"+msg+"\r\n";
+  resp_simple=create_simple_string(msg);
   send(client_fd,resp_simple.c_str(),resp_simple.size(),0);
 }
 void send_bulk_string(int client_fd,string msg){
   string resp_simple;
-  resp_simple="$"+to_string(msg.size())+"\r\n"+msg+"\r\n";
+  resp_simple=create_bulk_string(msg);
   send(client_fd,resp_simple.c_str(),resp_simple.size(),0);
 }
 void send_integer(int client_fd,int msg){
   string resp_simple;
-  resp_simple=":"+to_string(msg)+"\r\n";
+  resp_simple=create_integer(msg);
   send(client_fd,resp_simple.c_str(),resp_simple.size(),0);
 }
 
@@ -135,7 +144,18 @@ void send_null_string(int client_fd){
   string resp_simple="$-1\r\n";
   send(client_fd,resp_simple.c_str(),resp_simple.size(),0);
 }
-
+void send_null_array(int client_fd){
+  string resp_null_array="*0\r\n";
+  send(client_fd,resp_null_array.c_str(),resp_null_array.size(),0);
+}
+void send_array(int client_fd,vector<string>&list,int start=0,int end=INT_MAX){
+  if(end>list.size()-1)end=list.size()-1;
+  string resp_array="*"+to_string(end-start+1)+"\r\n";
+  for(int i=start;i<=end;i++){
+    resp_array.append(create_bulk_string(list[i]));
+  }
+  send(client_fd,resp_array.c_str(),resp_array.size(),0);
+}
 
 
 // void send_string_wrap(int client_fd,string msg){
@@ -203,6 +223,13 @@ void handleResponse(int client_fd){
     }else if(command=="rpush"){
       string list_key=parsed_request[1];
       send_integer(client_fd,handle_rpush(parsed_request,list_key));
+    }else if(command=="lrange"){
+      string list_key=parsed_request[1];
+      int start=stoi(parsed_request[2]);
+      int end=stoi(parsed_request[3]);
+      if(lists.count(list_key) && start<=end && start<lists[list_key].size()){
+        send_array(client_fd,lists[list_key],start,end);
+      }else send_null_array(client_fd);
     }
   }
 }
