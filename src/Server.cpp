@@ -23,6 +23,24 @@ unordered_map<string,string>kv;
 unordered_map<string,chrono::steady_clock::time_point>expiry_map;
 unordered_map<string,deque<string>>lists;
 mutex kv_mutex,expiry_map_mutex,lists_mutex;
+
+string create_simple_string(string &msg){
+  return "+"+msg+"\r\n";
+}
+string create_bulk_string(string &msg){
+  return "$"+to_string(msg.size())+"\r\n"+msg+"\r\n";
+}
+string create_integer(int &msg){
+  return ":"+to_string(msg)+"\r\n";
+}
+string create_resp_array(int client_fd,deque<string>&list,int start=0,int end=INT_MAX){
+  if(end>list.size()-1)end=list.size()-1;
+  string resp_array="*"+to_string(end-start+1)+"\r\n";
+  for(int i=start;i<=end;i++){
+    resp_array.append(create_bulk_string(list[i]));
+  }
+  return resp_array;
+}
 void start_expiry_cleaner(){
   thread([](){
     while(true){
@@ -139,23 +157,6 @@ void to_lowercase(string &str){
     transform(str.begin(),str.end(),str.begin(),
                   [](unsigned char c){return tolower(c);});
     
-}
-string create_simple_string(string &msg){
-  return "+"+msg+"\r\n";
-}
-string create_bulk_string(string &msg){
-  return "$"+to_string(msg.size())+"\r\n"+msg+"\r\n";
-}
-string create_integer(int &msg){
-  return ":"+to_string(msg)+"\r\n";
-}
-string create_resp_array(int client_fd,deque<string>&list,int start=0,int end=INT_MAX){
-  if(end>list.size()-1)end=list.size()-1;
-  string resp_array="*"+to_string(end-start+1)+"\r\n";
-  for(int i=start;i<=end;i++){
-    resp_array.append(create_bulk_string(list[i]));
-  }
-  return resp_array;
 }
 void send_simple_string(int client_fd,string msg){
   string resp_simple;
