@@ -73,12 +73,9 @@ void handle_blpop(int client_fd,string &key,int time)
     blocked_clients[key].push_back(client_fd);
     if(time==0){
       cout<<"yehe"<<endl;
-      bool list_empty=clients_cvs[client_fd].wait(lock,[&](){return !lists[key].empty();});
-      cout<<"list_empty: "<<list_empty<<endl;
-      if(list_empty){
-        send_null_array(client_fd);
-        return;
-      }
+
+      clients_cvs[client_fd].wait(lock,[&](){return !lists[key].empty();});
+      
     }
     else{ 
       auto deadline=chrono::steady_clock::now()+chrono::seconds(time);
