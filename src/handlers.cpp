@@ -76,7 +76,7 @@ void handle_multiple_lpop(int client_fd, string &key, int no_of_removals)
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
 
-void handle_blpop(int client_fd, string &key, float time) {
+void handle_blpop(int client_fd, string &key, float time=0) {
     unique_lock<mutex> lock(lists_mutex);
     cout<<"client requested blop : "<<client_fd<<endl;
     if (lists[key].empty()) {
@@ -87,12 +87,12 @@ void handle_blpop(int client_fd, string &key, float time) {
 
         auto &cv = clients_cvs[client_fd];
 
-        if (time == 0.00) {
+        if (time == 0) {
             cv.wait(lock, [&](){ return !lists[key].empty(); });
             cout<<"wait time over for : "<<client_fd<<endl;
         } else {
-            auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)time*1000);
-            cout<<"ho";
+
+            auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(time*1000));
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
             cout<<"has data : "<<has_data<<endl;
             if (!has_data) {
