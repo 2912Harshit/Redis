@@ -85,7 +85,7 @@ void handle_blpop(int client_fd,string &key,int time)
       }
     }
   }
-  cout<<"yehe"<<endl;
+  cout<<"recieved : "<<client_fd<<endl;
   string val=lists[key].front();
   lists[key].pop_front();
   deque<string>key_val={key,val};
