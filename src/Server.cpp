@@ -19,8 +19,8 @@ using namespace std;
 
 unordered_map<string,string>kv;
 unordered_map<string,chrono::steady_clock::time_point>expiry_map;
-vector<string>list_key;
-mutex kv_mutex,expiry_map_mutex,list_key_mutex;
+unordered_map<string,vector<string>>lists;
+mutex kv_mutex,expiry_map_mutex,lists_mutex;
 void start_expiry_cleaner(){
   thread([](){
     while(true){
@@ -40,11 +40,12 @@ void start_expiry_cleaner(){
   }).detach();
 }
 
-void handle_rpush_list_key(vector<string>&parsed_request){
-  lock_guard<mutex>lock1(list_key_mutex);
+int handle_rpush(vector<string>&parsed_request,string key){
+  lock_guard<mutex>lock1(lists_mutex);
   for(int i=2;i<parsed_request.size();i++){
-    list_key.push_back(parsed_request[i]);
+    lists[key].push_back(parsed_request[i]);
   }
+  return lists[key].size();
 }
 
 void set_key_value(string key,string value,int delay_time){
@@ -175,12 +176,8 @@ void handleResponse(int client_fd){
         if(!value.empty()) send_bulk_string(client_fd, value);
         else send_null_string(client_fd);
     }else if(command=="rpush"){
-      string internal_command=parsed_request[1];
-      to_lowercase(internal_command);
-      if(internal_command=="list_key"){
-        handle_rpush_list_key(parsed_request);
-        send_integer(client_fd,list_key.size());
-      }
+      string list_key=parsed_request[1];
+      send_integer(client_fd,handle_rpush(parsed_request,list_key));
     }
   }
 }
