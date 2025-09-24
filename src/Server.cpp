@@ -40,6 +40,31 @@ void start_expiry_cleaner(){
   }).detach();
 }
 
+vector<string> parse_redis_command(const string &buffer) {
+    vector<string> tokens;
+    size_t pos = 0;
+
+    if (buffer.empty() || buffer[pos] != '*') return tokens;
+
+    // Read number of arguments
+    size_t end_line = buffer.find("\r\n", pos);
+    int num_args = stoi(buffer.substr(pos + 1, end_line - pos - 1));
+    pos = end_line + 2;
+
+    for (int i = 0; i < num_args; ++i) {
+        if (buffer[pos] != '$') break; // Invalid format
+        end_line = buffer.find("\r\n", pos);
+        int len = stoi(buffer.substr(pos + 1, end_line - pos - 1));
+        pos = end_line + 2;
+
+        tokens.push_back(buffer.substr(pos, len));
+        pos += len + 2; // Skip string + \r\n
+    }
+
+    return tokens;
+}
+
+
 int handle_rpush(vector<string>&parsed_request,string key){
   lock_guard<mutex>lock1(lists_mutex);
   for(int i=2;i<parsed_request.size();i++){
@@ -128,16 +153,16 @@ void handleResponse(int client_fd){
       close(client_fd);
       return;
     }
-    string request(buffer);
-    vector<string>parsed_request;
-    size_t start = 0;
-    size_t end = request.find("\r\n");
+    buffer[bytes_read] = '\0';
+    vector<string>parsed_request=parse_redis_command(buffer);
+    // size_t start = 0;
+    // size_t end = request.find("\r\n");
 
-    while (end != std::string::npos) {
-        if(request[start]!='*' && request[start]!='$')parsed_request.push_back(request.substr(start, end - start));
-        start = end + 2;
-        end = request.find("\r\n", start);
-    }
+    // while (end != std::string::npos) {
+    //     if(request[start]!='*' && request[start]!='$')parsed_request.push_back(request.substr(start, end - start));
+    //     start = end + 2;
+    //     end = request.find("\r\n", start);
+    // }
     string command=parsed_request[0];
     to_lowercase(command);
     string response="";
