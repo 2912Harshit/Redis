@@ -103,7 +103,8 @@ void handleResponse(int client_fd)
       if (end < 0)
         end = 0;
       if (lists.count(list_key) && start <= end && start < (int)lists[list_key].size())
-      {
+      {  
+        lock_guard<mutex>lock(lists_mutex);
         send_array(client_fd, lists[list_key], start, end);
       }
       else

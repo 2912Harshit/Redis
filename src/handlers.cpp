@@ -108,7 +108,6 @@ void handle_blpop(int client_fd, string &key, int time) {
 
     deque<string> key_val = {key, val};
     // Avoid deadlock: release list lock before send_array (which also locks)
-    lock.unlock();
     send_array(client_fd, key_val);
 }
 
