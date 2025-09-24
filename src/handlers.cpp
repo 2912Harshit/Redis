@@ -93,6 +93,7 @@ void handle_blpop(int client_fd, string &key, int time) {
         } else {
             auto deadline = chrono::steady_clock::now() + chrono::milliseconds(time*1000);
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
+            cout<<"has data : "<<has_data<<endl;
             if (!has_data) {
                 // timeout: remove client from blocked list if still present
                 {
