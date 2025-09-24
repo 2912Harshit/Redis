@@ -48,6 +48,12 @@ string token_to_resp_bulk(string token){
   return res;
 }
 
+void to_lowercase(string &str){
+    transform(str.begin(),str.end(),str.begin(),
+                  [](unsigned char c){return tolower(c);});
+    
+}
+
 
 void send_string_wrap(int client_fd,string msg){
   string resp_bulk=token_to_resp_bulk(msg);
@@ -74,25 +80,31 @@ void handleResponse(int client_fd){
     }
 
     // parsed_request.push_back(request.substr(start));
-    for(string str:parsed_request)cout<<str<<" ";
-    cout<<endl;
-    string command=parsed_request[2];
+    // for(string str:parsed_request)cout<<str<<" ";
+    // cout<<endl;
+    string command=parsed_request[0];
+    to_lowercase(command);
     string response="";
-    transform(command.begin(),command.end(),command.begin(),
-                  [](unsigned char c){return tolower(c);});
     if(command=="ping"){
       send_string_wrap(client_fd,"PONG");
     }else if(command=="echo"){
-        send_string_wrap(client_fd,parsed_request[4]);
+        send_string_wrap(client_fd,parsed_request[1]);
     }else if(command=="set"){
-      string key=parsed_request[4];
-      string value=parsed_request[6];
+      string key=parsed_request[1];
+      string value=parsed_request[2];
       set_key_value(key,value);
-      if(parsed_request.size()>7){
+      if(parsed_request.size()>3){
+        string optional_arg=parsed_request[3];
+        to_lowercase(optional_arg);
+        if(optional_arg=="px" || optional_arg=="ex"){
+          int delay_time=stoi(parsed_request[4]);
+          if(optional_arg=="ex")delay_time*=1000;
+          set_timeout(remove_key,delay_time,key);
+        }
       }
       send_string_wrap(client_fd,"OK");
     }else if(command=="get"){
-      string key=parsed_request[4];
+      string key=parsed_request[1];
       if(kv.count(key))send_string_wrap(client_fd,kv[key]);
     }
   }
