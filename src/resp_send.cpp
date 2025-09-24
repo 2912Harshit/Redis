@@ -34,7 +34,7 @@ void send_null_string(int client_fd)
 }
 void send_null_array(int client_fd)
 {
-  string resp_null_array = "*0\r\n";
+  string resp_null_array = "*-1\r\n";
   send(client_fd, resp_null_array.c_str(), resp_null_array.size(), 0);
 }
 void send_array(int client_fd, deque<string> &list, int start, int end)

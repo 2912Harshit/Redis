@@ -107,8 +107,12 @@ void handleResponse(int client_fd)
         lock_guard<mutex>lock(lists_mutex);
         send_array(client_fd, lists[list_key], start, end);
       }
-      else
-        send_null_array(client_fd);
+      else{
+        string resp_array="*0\r\n";
+        send(client_fd,resp_array.c_str(),resp_array.size(),0);
+      }
+
+
     }
     else if (command == "lpush")
     {
