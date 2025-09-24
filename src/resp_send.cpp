@@ -39,7 +39,6 @@ void send_null_array(int client_fd)
 }
 void send_array(int client_fd, deque<string> &list, int start, int end)
 {
-  lock_guard<mutex> lock1(lists_mutex);
   string resp_array = create_resp_array(client_fd, list, start, end);
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
