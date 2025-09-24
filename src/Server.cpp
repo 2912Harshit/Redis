@@ -226,9 +226,12 @@ void handleResponse(int client_fd){
       string list_key=parsed_request[1];
       int start=stoi(parsed_request[2]);
       int end=stoi(parsed_request[3]);
+      if(start<0)start=lists[list_key].size()-start;
+      if(end<0)end=lists[list_key].size()-end;
+      if(start<0)start=0;
+      if(end<0)end=0;
+      cout<<start<<" "<<end<<endl;
       if(lists.count(list_key) && start<=end && start<lists[list_key].size()){
-        if(start<0)start=lists[list_key].size()-start;
-        if(end<0)end=lists[list_key].size()-end;
         send_array(client_fd,lists[list_key],start,end);
       }else send_null_array(client_fd);
     }
