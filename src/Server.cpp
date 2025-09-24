@@ -106,6 +106,7 @@ void handleResponse(int client_fd){
     }else if(command=="get"){
       string key=parsed_request[1];
       if(kv.count(key))send_string_wrap(client_fd,kv[key]);
+      else send_string_wrap(client_fd,"");
     }
   }
 }
