@@ -376,7 +376,8 @@ void handleResponse(int client_fd)
     }
     else if(command=="blpop"){
       string key=parsed_request[1];
-      handle_blpop(client_fd,key);
+      int time=stoi(parsed_request[2]);
+      handle_blpop(client_fd,key,time);
     }
   }
 }
