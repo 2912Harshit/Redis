@@ -16,18 +16,20 @@ using namespace std;
 int handle_rpush(vector<string> &parsed_request, string &key)
 {
   lock_guard<mutex> lock1(lists_mutex);
-  lock_guard<mutex>lock2(blocked_clients_mutex);
   for (int i = 2; i < (int)parsed_request.size();i++)
   {
     cout<<"rpush added"<<endl;
     lists[key].push_back(parsed_request[i]);
   }
-  while(!blocked_clients[key].empty() && !lists[key].empty()){
-    cout<<"rpush blocked"<<endl;
-    int client_fd=blocked_clients[key].front();
-    cout<<"client to receive : "<<client_fd<<endl;
-    blocked_clients[key].pop_front();
-    clients_cvs[client_fd].notify_one();
+  {
+    lock_guard<mutex>lock2(blocked_clients_mutex);
+    while(!blocked_clients[key].empty() && !lists[key].empty()){
+      cout<<"rpush blocked"<<endl;
+      int client_fd=blocked_clients[key].front();
+      cout<<"client to receive : "<<client_fd<<endl;
+      blocked_clients[key].pop_front();
+      clients_cvs[client_fd].notify_one();
+    }
   }
   cout<<"rpush size: "<<lists[key].size()<<endl;
   return (int)lists[key].size();
@@ -65,33 +67,37 @@ void handle_multiple_lpop(int client_fd, string &key, int no_of_removals)
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
 
-void handle_blpop(int client_fd,string &key,int time)
-{
-  unique_lock<mutex>lock(lists_mutex);
-  if(lists[key].empty()){
-    clients_cvs[client_fd];
-    blocked_clients[key].push_back(client_fd);
-    if(time==0){
-      cout<<"time 0"<<endl;
+void handle_blpop(int client_fd, string &key, int time) {
+    unique_lock<mutex> lock(lists_mutex);
 
-      clients_cvs[client_fd].wait(lock,[&](){return !lists[key].empty();});
-      
+    if (lists[key].empty()) {
+        {
+            lock_guard<mutex> guard(blocked_clients_mutex);
+            blocked_clients[key].push_back(client_fd);
+        }
+
+        auto &cv = clients_cvs[client_fd];
+
+        if (time == 0) {
+            cv.wait(lock, [&](){ return !lists[key].empty(); });
+        } else {
+            auto deadline = chrono::steady_clock::now() + chrono::seconds(time);
+            bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
+            if (!has_data) {
+                send_null_array(client_fd);
+                return;
+            }
+        }
     }
-    else{ 
-      auto deadline=chrono::steady_clock::now()+chrono::seconds(time);
-      bool list_empty=clients_cvs[client_fd].wait_until(lock,deadline,[&](){return lists[key].empty();});
-      if(list_empty){
-        send_null_array(client_fd);
-        return;
-      }
-    }
-  }
-  cout<<"recieved : "<<client_fd<<endl;
-  string val=lists[key].front();
-  lists[key].pop_front();
-  deque<string>key_val={key,val};
-  send_array(client_fd,key_val);
+
+    // At this point, we know lists[key] has at least one element
+    string val = lists[key].front();
+    lists[key].pop_front();
+
+    deque<string> key_val = {key, val};
+    send_array(client_fd, key_val);
 }
+
 
 void set_key_value(string key, string value, int delay_time)
 {
