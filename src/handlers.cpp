@@ -17,10 +17,10 @@ int handle_rpush(vector<string> &parsed_request, string &key)
 {
   lock_guard<mutex> lock1(lists_mutex);
   lock_guard<mutex>lock2(blocked_clients_mutex);
-  for (int i = 2; i < (int)parsed_request.size();)
+  for (int i = 2; i < (int)parsed_request.size();i++)
   {
     cout<<"rpush added"<<endl;
-    lists[key].push_back(parsed_request[i++]);
+    lists[key].push_back(parsed_request[i]);
   }
   while(!blocked_clients[key].empty() && !lists[key].empty()){
     cout<<"rpush blocked"<<endl;
@@ -35,9 +35,9 @@ int handle_lpush(vector<string> &parsed_request, string &key)
 {
   lock_guard<mutex> lock1(lists_mutex);
   lock_guard<mutex>lock2(blocked_clients_mutex);
-  for (int i = 2; i < (int)parsed_request.size();)
+  for (int i = 2; i < (int)parsed_request.size();i++)
   {
-    lists[key].push_front(parsed_request[i++]);
+    lists[key].push_front(parsed_request[i]);
   }
   while(!blocked_clients[key].empty() && !lists[key].empty()){
     int client_fd=blocked_clients[key].front();
