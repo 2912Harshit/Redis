@@ -76,7 +76,7 @@ void handle_multiple_lpop(int client_fd, string &key, int no_of_removals)
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
 
-void handle_blpop(int client_fd, string &key, int time) {
+void handle_blpop(int client_fd, string &key, float time) {
     unique_lock<mutex> lock(lists_mutex);
     cout<<"client requested blop : "<<client_fd<<endl;
     if (lists[key].empty()) {

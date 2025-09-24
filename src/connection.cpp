@@ -150,7 +150,7 @@ void handleResponse(int client_fd)
     }
     else if(command=="blpop"){
       string key=parsed_request[1];
-      int time=0;
+      float time=0;
       if(parsed_request.size()>2)
         time=stoi(parsed_request[2]);
       handle_blpop(client_fd,key,time);
