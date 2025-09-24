@@ -63,6 +63,7 @@ void handleResponse(int client_fd){
       return;
     }
     string request(buffer);
+    cout<<request<<endl;
     vector<string>parsed_request;
     size_t start = 0;
     size_t end = request.find("\r\n");
