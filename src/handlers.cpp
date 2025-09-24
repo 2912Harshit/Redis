@@ -1,4 +1,5 @@
 #include <string>
+#include<iostream>
 #include <vector>
 #include <deque>
 #include <mutex>
@@ -18,12 +19,17 @@ int handle_rpush(vector<string> &parsed_request, string &key)
   for (int i = 2; i < (int)parsed_request.size();)
   {
     if(!blocked_clients[key].empty() && !lists[key].empty()){
+      cout<<"rpush blocked"<<endl;
       int client_fd=blocked_clients[key].front();
       blocked_clients[key].pop_front();
       clients_cvs[client_fd].notify_one();
     }
-    else lists[key].push_back(parsed_request[i++]);
+    else {
+      cout<<"rpush added"<<endl;
+      lists[key].push_back(parsed_request[i++]);
+    }
   }
+  cout<<"rpush size: "<<lists[key].size()<<endl;
   return (int)lists[key].size();
 }
 int handle_lpush(vector<string> &parsed_request, string &key)
@@ -63,16 +69,27 @@ void handle_blpop(int client_fd,string &key,int time)
 {
   unique_lock<mutex>lock(lists_mutex);
   if(lists[key].empty()){
-    condition_variable cv;
     clients_cvs[client_fd];
     blocked_clients[key].push_back(client_fd);
-    auto deadline=chrono::steady_clock::now()+chrono::seconds(time);
-    bool list_empty=clients_cvs[client_fd].wait_until(lock,deadline,[&](){return lists[key].empty();});
-    if(list_empty){
-      send_null_array(client_fd);
-      return;
+    if(time==0){
+      cout<<"yehe"<<endl;
+      bool list_empty=clients_cvs[client_fd].wait(lock,[&](){return !lists[key].empty();});
+      cout<<"list_empty: "<<list_empty<<endl;
+      if(list_empty){
+        send_null_array(client_fd);
+        return;
+      }
+    }
+    else{ 
+      auto deadline=chrono::steady_clock::now()+chrono::seconds(time);
+      bool list_empty=clients_cvs[client_fd].wait_until(lock,deadline,[&](){return lists[key].empty();});
+      if(list_empty){
+        send_null_array(client_fd);
+        return;
+      }
     }
   }
+  cout<<"yehe"<<endl;
   string val=lists[key].front();
   lists[key].pop_front();
   deque<string>key_val={key,val};
