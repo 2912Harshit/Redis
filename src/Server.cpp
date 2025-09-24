@@ -157,7 +157,6 @@ void send_array(int client_fd,vector<string>&list,int start=0,int end=INT_MAX){
   send(client_fd,resp_array.c_str(),resp_array.size(),0);
 }
 
-
 // void send_string_wrap(int client_fd,string msg){
 //   string resp_bulk=token_to_resp_bulk(msg);
 //   send(client_fd,resp_bulk.c_str(),resp_bulk.size(),0);
@@ -228,6 +227,8 @@ void handleResponse(int client_fd){
       int start=stoi(parsed_request[2]);
       int end=stoi(parsed_request[3]);
       if(lists.count(list_key) && start<=end && start<lists[list_key].size()){
+        if(start<0)start=lists[list_key].size()-start;
+        if(end<0)end=lists[list_key].size()-end;
         send_array(client_fd,lists[list_key],start,end);
       }else send_null_array(client_fd);
     }
