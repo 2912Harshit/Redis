@@ -1,5 +1,6 @@
 #include <string>
 #include<iostream>
+#include<thread>
 #include <vector>
 #include <deque>
 #include <mutex>
@@ -29,6 +30,7 @@ int handle_rpush(vector<string> &parsed_request, string &key)
       cout<<"client to receive : "<<client_fd<<endl;
       blocked_clients[key].pop_front();
       clients_cvs[client_fd].notify_one();
+      this_thread::sleep_for(chrono::milliseconds(100));
     }
   }
   cout<<"rpush size: "<<lists[key].size()<<endl;
