@@ -39,7 +39,6 @@ int handle_rpush(vector<string> &parsed_request, string &key)
 int handle_lpush(vector<string> &parsed_request, string &key)
 {
   lock_guard<mutex> lock1(lists_mutex);
-  lock_guard<mutex>lock2(blocked_clients_mutex);
   for (int i = 2; i < (int)parsed_request.size();i++)
   { 
     cout<<"lpush added: "<<endl;
