@@ -98,7 +98,7 @@ int handle_rpush(vector<string>&parsed_request,string &key){
 }
 int handle_lpush(vector<string>&parsed_request,string &key){
   lock_guard<mutex>lock1(lists_mutex);
-  for(int i=parsed_request.size()-1;i>=2;i--){
+  for(int i=2;i<parsed_request.size();i++){
     lists[key].push_front(parsed_request[i]);
   }
   return lists[key].size();
