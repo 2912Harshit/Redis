@@ -87,6 +87,14 @@ void handle_blpop(int client_fd, string &key, int time) {
             auto deadline = chrono::steady_clock::now() + chrono::seconds(time);
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
             if (!has_data) {
+                // timeout: remove client from blocked list if still present
+                {
+                    lock_guard<mutex> guard(blocked_clients_mutex);
+                    auto &dq = blocked_clients[key];
+                    for (auto it = dq.begin(); it != dq.end(); ++it) {
+                        if (*it == client_fd) { dq.erase(it); break; }
+                    }
+                }
                 send_null_array(client_fd);
                 return;
             }
@@ -99,6 +107,8 @@ void handle_blpop(int client_fd, string &key, int time) {
     lists[key].pop_front();
 
     deque<string> key_val = {key, val};
+    // Avoid deadlock: release list lock before send_array (which also locks)
+    lock.unlock();
     send_array(client_fd, key_val);
 }
 

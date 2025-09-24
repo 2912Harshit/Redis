@@ -29,7 +29,7 @@ void handleResponse(int client_fd)
     buffer[bytes_read] = '\0';
     vector<string> parsed_request = parse_redis_command(buffer);
     if(parsed_request.empty()) continue;
-    cout<<"parsed_request: "<<parsed_request[0]<<client_fd<<endl;
+    cout<<"parsed_request: "<<parsed_request[0]<<" "<<client_fd<<endl;
     string command = parsed_request[0];
     to_lowercase(command);
     if (command == "ping")
