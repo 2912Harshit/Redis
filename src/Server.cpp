@@ -250,6 +250,15 @@ void handleResponse(int client_fd){
     }else if(command=="lpush"){
       string list_key=parsed_request[1];
       send_integer(client_fd,handle_lpush(parsed_request,list_key));
+    }else if(command=="llen"){
+      string key=parsed_request[1];
+      bool key_exists=false;
+      {
+        lock_guard<mutex>lock(lists_mutex);
+        if(lists.count(key))key_exists=true;
+      }
+      if(key_exists)send_integer(client_fd,lists[key].size());
+      else send_integer(client_fd,0);
     }
   }
 }
