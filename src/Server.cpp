@@ -23,14 +23,16 @@ mutex kv_mutex,expiry_map_mutex;
 void start_expiry_cleaner(){
   thread([](){
     while(true){
-      lock_guard<mutex>lock1(kv_mutex);
-      lock_guard<mutex>lock2(expiry_map_mutex);
-      auto now=chrono::steady_clock::now();
-      for(auto it=expiry_map.begin();it!=expiry_map.end();){
-        if(now>=it->second){
-          kv.erase(it->first);
-          it=expiry_map.erase(it);
-        }else ++it;
+      {
+        lock_guard<mutex>lock1(kv_mutex);
+        lock_guard<mutex>lock2(expiry_map_mutex);
+        auto now=chrono::steady_clock::now();
+        for(auto it=expiry_map.begin();it!=expiry_map.end();){
+          if(now>=it->second){
+            kv.erase(it->first);
+            it=expiry_map.erase(it);
+          }else ++it;
+        }
       }
       this_thread::sleep_for(chrono::milliseconds(100));
     }
