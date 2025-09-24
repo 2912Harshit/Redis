@@ -68,12 +68,14 @@ void handleResponse(int client_fd){
     size_t end = request.find("\r\n");
 
     while (end != std::string::npos) {
-        parsed_request.push_back(request.substr(start, end - start));
+        if(request[start]!='*' && request[start]!='$')parsed_request.push_back(request.substr(start, end - start));
         start = end + 2;
         end = request.find("\r\n", start);
     }
-        for(string str:parsed_request)cout<<str<<" ";
+
     // parsed_request.push_back(request.substr(start));
+    for(string str:parsed_request)cout<<str<<" ";
+    cout<<endl;
     string command=parsed_request[2];
     string response="";
     transform(command.begin(),command.end(),command.begin(),
