@@ -87,11 +87,11 @@ void handle_blpop(int client_fd, string &key, float time) {
 
         auto &cv = clients_cvs[client_fd];
 
-        if (time == 0) {
+        if (time == 0.00) {
             cv.wait(lock, [&](){ return !lists[key].empty(); });
             cout<<"wait time over for : "<<client_fd<<endl;
         } else {
-            auto deadline = chrono::steady_clock::now() + chrono::milliseconds(time*1000);
+            auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)time*1000);
             cout<<"ho";
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
             cout<<"has data : "<<has_data<<endl;
