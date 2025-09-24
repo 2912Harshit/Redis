@@ -72,7 +72,7 @@ void handle_blpop(int client_fd,string &key,int time)
     clients_cvs[client_fd];
     blocked_clients[key].push_back(client_fd);
     if(time==0){
-      cout<<"yehe"<<endl;
+      cout<<"time 0"<<endl;
 
       clients_cvs[client_fd].wait(lock,[&](){return !lists[key].empty();});
       
