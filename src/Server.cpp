@@ -15,6 +15,7 @@
 #include<unordered_map>
 #include<mutex>
 #include<functional>
+#include<algorithm>
 using namespace std;
 
 unordered_map<string,string>kv;
@@ -64,13 +65,26 @@ vector<string> parse_redis_command(const string &buffer) {
     return tokens;
 }
 
-
-int handle_rpush(vector<string>&parsed_request,string &key){
-  lock_guard<mutex>lock1(lists_mutex);
+int add_elements_in_list(vector<string>&parsed_request,string &key){
   for(int i=2;i<parsed_request.size();i++){
     if(!parsed_request[i].empty())lists[key].push_back(parsed_request[i]);
   }
   return lists[key].size();
+}
+
+
+int handle_rpush(vector<string>&parsed_request,string &key){
+  lock_guard<mutex>lock1(lists_mutex);
+  return add_elements_in_list(parsed_request,key);
+}
+int handle_lpush(vector<string>&parsed_request,string &key){
+  lock_guard<mutex>lock1(lists_mutex);
+  int prev_size=lists[key].size();
+  int size=add_elements_in_list(parsed_request,key);
+  int added=size-prev_size;
+  reverse(lists[key].begin(),lists[key].end());
+  reverse(lists[key].begin()+added,lists[key].end());
+  return size;
 }
 
 void set_key_value(string key,string value,int delay_time){
@@ -230,10 +244,12 @@ void handleResponse(int client_fd){
       if(end<0)end=lists[list_key].size()+end;
       if(start<0)start=0;
       if(end<0)end=0;
-      cout<<start<<" "<<end<<endl;
       if(lists.count(list_key) && start<=end && start<lists[list_key].size()){
         send_array(client_fd,lists[list_key],start,end);
       }else send_null_array(client_fd);
+    }else if(command=="lpush"){
+      string list_key=parsed_request[1];
+      send_integer(client_fd,handle_lpush(parsed_request,list_key));
     }
   }
 }
