@@ -19,16 +19,14 @@ int handle_rpush(vector<string> &parsed_request, string &key)
   lock_guard<mutex>lock2(blocked_clients_mutex);
   for (int i = 2; i < (int)parsed_request.size();)
   {
-    if(!blocked_clients[key].empty() && !lists[key].empty()){
-      cout<<"rpush blocked"<<endl;
-      int client_fd=blocked_clients[key].front();
-      blocked_clients[key].pop_front();
-      clients_cvs[client_fd].notify_one();
-    }
-    else {
-      cout<<"rpush added"<<endl;
-      lists[key].push_back(parsed_request[i++]);
-    }
+    cout<<"rpush added"<<endl;
+    lists[key].push_back(parsed_request[i++]);
+  }
+  while(!blocked_clients[key].empty() && !lists[key].empty()){
+    cout<<"rpush blocked"<<endl;
+    int client_fd=blocked_clients[key].front();
+    blocked_clients[key].pop_front();
+    clients_cvs[client_fd].notify_one();
   }
   cout<<"rpush size: "<<lists[key].size()<<endl;
   return (int)lists[key].size();
@@ -39,12 +37,12 @@ int handle_lpush(vector<string> &parsed_request, string &key)
   lock_guard<mutex>lock2(blocked_clients_mutex);
   for (int i = 2; i < (int)parsed_request.size();)
   {
-    if(!blocked_clients[key].empty() && !lists[key].empty()){
-      int client_fd=blocked_clients[key].front();
-      blocked_clients[key].pop_front();
-      clients_cvs[client_fd].notify_one();
-    }
-    else lists[key].push_front(parsed_request[i++]);
+    lists[key].push_front(parsed_request[i++]);
+  }
+  while(!blocked_clients[key].empty() && !lists[key].empty()){
+    int client_fd=blocked_clients[key].front();
+    blocked_clients[key].pop_front();
+    clients_cvs[client_fd].notify_one();
   }
   return (int)lists[key].size();
 }
