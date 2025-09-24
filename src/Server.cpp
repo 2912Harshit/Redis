@@ -46,7 +46,7 @@ int handle_rpush(vector<string>&parsed_request,string key){
     lists[key].push_back(parsed_request[i]);
   }
   // for(string str:lists[key])cout<<str<<" ";
-  // cout<<lists[key].size()<<endl;
+  cout<<lists[key].size()<<endl;
   return lists[key].size();
 }
 
