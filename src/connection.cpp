@@ -28,6 +28,7 @@ void handleResponse(int client_fd)
     buffer[bytes_read] = '\0';
     vector<string> parsed_request = parse_redis_command(buffer);
     if(parsed_request.empty()) continue;
+    cout<<"parsed_request: "<<parsed_request[0]<<endl;
     string command = parsed_request[0];
     to_lowercase(command);
     if (command == "ping")
@@ -147,7 +148,10 @@ void handleResponse(int client_fd)
     }
     else if(command=="blpop"){
       string key=parsed_request[1];
-      handle_blpop(client_fd,key);
+      int time=0;
+      if(parsed_request.size()>2)
+        time=stoi(parsed_request[2]);
+      handle_blpop(client_fd,key,time);
     }
   }
 }
