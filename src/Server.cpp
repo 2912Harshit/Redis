@@ -37,8 +37,10 @@ string create_resp_array(int client_fd,deque<string>&list,int start=0,int end=IN
   if(end>list.size()-1)end=list.size()-1;
   string resp_array="*"+to_string(end-start+1)+"\r\n";
   for(int i=start;i<=end;i++){
+    cout<<list[i]<<" ";
     resp_array.append(create_bulk_string(list[i]));
   }
+  cout<<endl;
   return resp_array;
 }
 void start_expiry_cleaner(){
