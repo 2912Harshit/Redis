@@ -25,6 +25,7 @@ int handle_rpush(vector<string> &parsed_request, string &key)
   while(!blocked_clients[key].empty() && !lists[key].empty()){
     cout<<"rpush blocked"<<endl;
     int client_fd=blocked_clients[key].front();
+    cout<<"client to receive : "<<client_fd<<endl;
     blocked_clients[key].pop_front();
     clients_cvs[client_fd].notify_one();
   }
