@@ -19,21 +19,17 @@ int handle_rpush(vector<string> &parsed_request, string &key)
   lock_guard<mutex> lock1(lists_mutex);
   for (int i = 2; i < (int)parsed_request.size();i++)
   {
-    cout<<"rpush added"<<endl;
     lists[key].push_back(parsed_request[i]);
   }
   {
     lock_guard<mutex>lock2(blocked_clients_mutex);
     while(!blocked_clients[key].empty() && !lists[key].empty()){
-      cout<<"rpush blocked"<<endl;
       int client_fd=blocked_clients[key].front();
-      cout<<"client to receive : "<<client_fd<<endl;
       blocked_clients[key].pop_front();
       clients_cvs[client_fd].notify_one();
       // this_thread::sleep_for(chrono::milliseconds(100));
     }
   }
-  cout<<"rpush size: "<<lists[key].size()<<endl;
   return (int)lists[key].size();
 }
 int handle_lpush(vector<string> &parsed_request, string &key)
@@ -41,15 +37,12 @@ int handle_lpush(vector<string> &parsed_request, string &key)
   lock_guard<mutex> lock1(lists_mutex);
   for (int i = 2; i < (int)parsed_request.size();i++)
   { 
-    cout<<"lpush added: "<<endl;
     lists[key].push_front(parsed_request[i]);
   }
   {
     lock_guard<mutex>lock2(blocked_clients_mutex);
     while(!blocked_clients[key].empty() && !lists[key].empty()){
-      cout<<"rpush blocked"<<endl;
       int client_fd=blocked_clients[key].front();
-      cout<<"client to receive : "<<client_fd<<endl;
       blocked_clients[key].pop_front();
       clients_cvs[client_fd].notify_one();
       // this_thread::sleep_for(chrono::milliseconds(100));
@@ -78,7 +71,6 @@ void handle_multiple_lpop(int client_fd, string &key, int no_of_removals)
 
 void handle_blpop(int client_fd, string &key, float time) {
     unique_lock<mutex> lock(lists_mutex);
-    cout<<"client requested blop : "<<client_fd<<endl;
     if (lists[key].empty()) {
         {
             lock_guard<mutex> guard(blocked_clients_mutex);
@@ -89,12 +81,11 @@ void handle_blpop(int client_fd, string &key, float time) {
 
         if (time == 0) {
             cv.wait(lock, [&](){ return !lists[key].empty(); });
-            cout<<"wait time over for : "<<client_fd<<endl;
         } else {
 
             auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(time*1000));
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
-            cout<<"has data : "<<has_data<<endl;
+
             if (!has_data) {
                 // timeout: remove client from blocked list if still present
                 {
@@ -111,7 +102,7 @@ void handle_blpop(int client_fd, string &key, float time) {
     }
 
     // At this point, we know lists[key] has at least one element
-    cout<<"got response for : "<<client_fd<<endl;
+
     string val = lists[key].front();
     lists[key].pop_front();
 
