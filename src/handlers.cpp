@@ -80,6 +80,7 @@ void handle_blpop(int client_fd, string &key, int time) {
 
         if (time == 0) {
             cv.wait(lock, [&](){ return !lists[key].empty(); });
+            cout<<"wait time over for : "<<client_fd<<endl;
         } else {
             auto deadline = chrono::steady_clock::now() + chrono::seconds(time);
             bool has_data = cv.wait_until(lock, deadline, [&](){ return !lists[key].empty(); });
@@ -91,6 +92,7 @@ void handle_blpop(int client_fd, string &key, int time) {
     }
 
     // At this point, we know lists[key] has at least one element
+    cout<<"got response for : "<<client_fd<<endl;
     string val = lists[key].front();
     lists[key].pop_front();
 
