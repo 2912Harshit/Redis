@@ -16,11 +16,12 @@
 #include<mutex>
 #include<functional>
 #include<algorithm>
+#include<deque>
 using namespace std;
 
 unordered_map<string,string>kv;
 unordered_map<string,chrono::steady_clock::time_point>expiry_map;
-unordered_map<string,vector<string>>lists;
+unordered_map<string,deque<string>>lists;
 mutex kv_mutex,expiry_map_mutex,lists_mutex;
 void start_expiry_cleaner(){
   thread([](){
@@ -65,26 +66,36 @@ vector<string> parse_redis_command(const string &buffer) {
     return tokens;
 }
 
-int add_elements_in_list(vector<string>&parsed_request,string &key){
+
+
+
+int handle_rpush(vector<string>&parsed_request,string &key){
+  lock_guard<mutex>lock1(lists_mutex);
   for(int i=2;i<parsed_request.size();i++){
     if(!parsed_request[i].empty())lists[key].push_back(parsed_request[i]);
   }
   return lists[key].size();
 }
-
-
-int handle_rpush(vector<string>&parsed_request,string &key){
-  lock_guard<mutex>lock1(lists_mutex);
-  return add_elements_in_list(parsed_request,key);
-}
 int handle_lpush(vector<string>&parsed_request,string &key){
   lock_guard<mutex>lock1(lists_mutex);
-  int prev_size=lists[key].size();
-  int size=add_elements_in_list(parsed_request,key);
-  int added=size-prev_size;
-  reverse(lists[key].begin(),lists[key].end());
-  reverse(lists[key].begin()+added,lists[key].end());
-  return size;
+  for(int i=parsed_request.size()-1;i>=2;i--){
+    lists[key].push_front(parsed_request[i]);
+  }
+  return lists[key].size();
+}
+string handle_lpop(string &key){
+  lock_guard<mutex>lock1(lists_mutex);
+  string str=lists[key].front();
+  lists[key].pop_front();
+  return str;
+}
+void handle_multiple_lpop(int client_fd,string &key,int no_of_removals){
+  lock_guard<mutex>lock1(lists_mutex);
+  string resp_array=create_resp_array(client_fd,lists[key],0,no_of_removals-1);
+  for(int i=0;i<no_of_removals;i++){
+    lists[key].pop_front();
+  }
+  send(client_fd,resp_array.c_str(),resp_array.size(),0);
 }
 
 void set_key_value(string key,string value,int delay_time){
@@ -138,6 +149,14 @@ string create_bulk_string(string &msg){
 string create_integer(int &msg){
   return ":"+to_string(msg)+"\r\n";
 }
+string create_resp_array(int client_fd,deque<string>&list,int start=0,int end=INT_MAX){
+  if(end>list.size()-1)end=list.size()-1;
+  string resp_array="*"+to_string(end-start+1)+"\r\n";
+  for(int i=start;i<=end;i++){
+    resp_array.append(create_bulk_string(list[i]));
+  }
+  return resp_array;
+}
 void send_simple_string(int client_fd,string msg){
   string resp_simple;
   resp_simple=create_simple_string(msg);
@@ -162,12 +181,9 @@ void send_null_array(int client_fd){
   string resp_null_array="*0\r\n";
   send(client_fd,resp_null_array.c_str(),resp_null_array.size(),0);
 }
-void send_array(int client_fd,vector<string>&list,int start=0,int end=INT_MAX){
-  if(end>list.size()-1)end=list.size()-1;
-  string resp_array="*"+to_string(end-start+1)+"\r\n";
-  for(int i=start;i<=end;i++){
-    resp_array.append(create_bulk_string(list[i]));
-  }
+void send_array(int client_fd,deque<string>&list,int start=0,int end=INT_MAX){
+  lock_guard<mutex>lock1(lists_mutex);
+  string resp_array=create_resp_array(client_fd,list,start,end);
   send(client_fd,resp_array.c_str(),resp_array.size(),0);
 }
 
@@ -259,6 +275,18 @@ void handleResponse(int client_fd){
       }
       if(key_exists)send_integer(client_fd,lists[key].size());
       else send_integer(client_fd,0);
+    }else if(command=="lpop"){
+      string key=parsed_request[1];
+      int no_of_removals=1;
+      if(parsed_request.size()>2)no_of_removals=stoi(parsed_request[2]);
+      bool key_exists=false;
+      {
+        lock_guard<mutex>lock(lists_mutex);
+        if(lists.count(key))key_exists=true;
+      }
+      if(key_exists && no_of_removals==1)send_bulk_string(client_fd,handle_lpop(key));
+      else if(key_exists && no_of_removals>1)handle_multiple_lpop(client_fd,key,no_of_removals);
+      else send_null_string(client_fd);
     }
   }
 }
