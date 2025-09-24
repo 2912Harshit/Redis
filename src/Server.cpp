@@ -63,7 +63,6 @@ void handleResponse(int client_fd){
       return;
     }
     string request(buffer);
-    cout<<request<<endl;
     vector<string>parsed_request;
     size_t start = 0;
     size_t end = request.find("\r\n");
@@ -73,6 +72,7 @@ void handleResponse(int client_fd){
         start = end + 2;
         end = request.find("\r\n", start);
     }
+        for(string str:parsed_request)cout<<str<<" ";
     // parsed_request.push_back(request.substr(start));
     string command=parsed_request[2];
     string response="";
@@ -87,7 +87,6 @@ void handleResponse(int client_fd){
       string value=parsed_request[6];
       set_key_value(key,value);
       if(parsed_request.size()>7){
-        for(string str:parsed_request)cout<<str<<" ";
       }
       send_string_wrap(client_fd,"OK");
     }else if(command=="get"){
