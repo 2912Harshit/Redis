@@ -152,7 +152,7 @@ string handle_type_of(string key,std::shared_ptr<StreamHandler>&StreamHandler_pt
     lock_guard<mutex>lock(m_stream_mutex);
     if(StreamHandler_ptr->m_streams.count(key))return "stream";
   }
-  // set zset hash stream vectorset
+  // set zset hash vectorset
   return "none";
 }
 

@@ -33,7 +33,7 @@ string create_resp_array(int client_fd, deque<string> &list, int start, int end)
 
 string create_simple_error(string msg)
 {
-  return "-ERR "+msg;
+  return "-ERR "+msg+"\r\n";
 }
 
 

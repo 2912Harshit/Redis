@@ -11,5 +11,6 @@ void send_null_bulk_string(int client_fd);
 void send_null_array(int client_fd);
 void send_array(int client_fd, std::deque<std::string> &list, int start = 0, int end = INT_MAX);
 void send_empty_array(int client_fd);
+void send_simple_error(int client_fd,string msg);
 
 
