@@ -11,5 +11,6 @@ void handle_blpop(int client_fd, std::string &key, float time);
 
 void set_key_value(std::string key, std::string value, int delay_time);
 void remove_key(std::string key);
+string handle_type_of(string key);
 
 

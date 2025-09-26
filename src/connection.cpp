@@ -157,6 +157,9 @@ void handleResponse(int client_fd)
       if(parsed_request.size()>2)
         time=stof(parsed_request[2]);
       handle_blpop(client_fd,key,time);
+    }else if(command == "type"){
+      string key=parsed_request[1];
+      send_simple_string(client_fd,handle_type_of(key));
     }
   }
 }

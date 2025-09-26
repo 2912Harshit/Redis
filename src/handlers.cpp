@@ -137,4 +137,17 @@ void remove_key(string key)
   }
 }
 
+string handle_type_of(string key)
+{
+  {
+    lock_guard<mutex>lock(kv_mutex);
+    if(kv.count(key))return "string";
+  }
+  {
+    lock_guard<mutex>lock(lists_mutex);
+    if(lists.count(key))return "list";
+  }
+  return "none";
+}
+
 
