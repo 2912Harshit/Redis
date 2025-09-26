@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "StreamHandler.h"
 using namespace std;
 
 int handle_rpush(std::vector<std::string> &parsed_request, std::string &key);
@@ -12,6 +13,6 @@ void handle_blpop(int client_fd, std::string &key, float time);
 
 void set_key_value(std::string key, std::string value, int delay_time);
 void remove_key(std::string key);
-std::string handle_type_of(std::string key);
+std::string handle_type_of(std::string key,std::shared_ptr<StreamHandler>&StreamHandler_ptr);
 
 

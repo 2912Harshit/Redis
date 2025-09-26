@@ -16,7 +16,7 @@ using namespace std;
 
  
 
-void handleResponse(int client_fd, std::shared_ptr<StreamHandler>StreamHandler_ptr)
+void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_ptr)
 {
   char buffer[1024];
 
@@ -161,7 +161,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>StreamHandler_p
       handle_blpop(client_fd,key,time);
     }else if(command == "type"){
       string key=parsed_request[1];
-      send_simple_string(client_fd,handle_type_of(key));
+      send_simple_string(client_fd,handle_type_of(key,std::ref(StreamHandler_ptr)));
     }
     else if(command=="xadd"){
       string resp=StreamHandler_ptr->xaddHandler(parsed_request);

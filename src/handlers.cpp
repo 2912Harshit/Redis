@@ -11,6 +11,7 @@
 #include "state.h"
 #include "resp_create.h"
 #include "resp_send.h"
+#include "StreamHandler.h"
 
 using namespace std;
 
@@ -137,7 +138,7 @@ void remove_key(string key)
   }
 }
 
-string handle_type_of(string key)
+string handle_type_of(string key,std::shared_ptr<StreamHandler>&StreamHandler_ptr)
 {
   {
     lock_guard<mutex>lock(kv_mutex);
@@ -146,6 +147,10 @@ string handle_type_of(string key)
   {
     lock_guard<mutex>lock(lists_mutex);
     if(lists.count(key))return "list";
+  }
+  {
+    lock_guard<mutex>lock(m_stream_mutex);
+    if(StreamHandler_ptr->m_streams.count(key))return "stream";
   }
   // set zset hash stream vectorset
   return "none";
