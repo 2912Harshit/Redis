@@ -48,3 +48,8 @@ void send_empty_array(int client_fd)
   send(client_fd,resp_array.c_str(),resp_array.size(),0);
 }
 
+void send_simple_error(int client_fd,string msg){
+  string resp_simple_error=create_simple_error(msg);
+  send(client_fd,resp_simple_error.c_str(),resp_simple_error.size(),0);
+}
+
