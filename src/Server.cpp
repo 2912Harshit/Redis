@@ -64,13 +64,12 @@ int main(int argc, char **argv)
   // Uncomment this block to pass the first stage
   //
   start_expiry_cleaner();
-  StreamHandler StreamHandler_obj;
-  StreamHandler *StreamHandler_ptr=&StreamHandler_obj;
+  std::shared_ptr<StreamHandler>StreamHandler_ptr=std::make_shared<StreamHandler>();
   while (true)
   {
     int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
     std::cout << "Client connected : " << client_fd << "\n";
-    thread client_thread(handleResponse, client_fd, StreamHandler_ptr);
+    thread client_thread(handleResponse, client_fd, std::ref(StreamHandler_ptr));
     client_thread.detach();
   }
   close(server_fd);
