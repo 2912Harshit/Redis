@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   {
     int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
     std::cout << "Client connected : " << client_fd << "\n";
-    thread client_thread(handleResponse, client_fd, std::ref(StreamHandler_ptr));
+    thread client_thread(handleResponse, client_fd, StreamHandler_ptr);
     client_thread.detach();
   }
   close(server_fd);
