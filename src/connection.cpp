@@ -10,14 +10,16 @@
 #include "handlers.h"
 #include "resp_send.h"
 #include "utils.h"
+#include "StreamHandler.h"
 
 using namespace std;
 
  
 
-void handleResponse(int client_fd)
+void handleResponse(int client_fd, StreamHandler *StreamHandler_ptr)
 {
   char buffer[1024];
+
   while (true)
   {
     int bytes_read = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
@@ -160,6 +162,10 @@ void handleResponse(int client_fd)
     }else if(command == "type"){
       string key=parsed_request[1];
       send_simple_string(client_fd,handle_type_of(key));
+    }
+    else if(command=="xadd"){
+      string resp=StreamHandler_ptr->xaddHandler(parsed_request);
+      send(client_fd,resp.c_str(),resp.size(),0);
     }
   }
 }

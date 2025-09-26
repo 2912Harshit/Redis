@@ -18,5 +18,6 @@ extern std::mutex expiry_map_mutex;
 extern std::mutex lists_mutex;
 extern std::mutex clients_cvs_mutex;
 extern std::mutex blocked_clients_mutex;
+extern std::mutex m_stream_mutex;
 
 

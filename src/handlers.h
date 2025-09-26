@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+using namespace std;
 
 int handle_rpush(std::vector<std::string> &parsed_request, std::string &key);
 int handle_lpush(std::vector<std::string> &parsed_request, std::string &key);

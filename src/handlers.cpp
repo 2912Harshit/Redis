@@ -147,6 +147,7 @@ string handle_type_of(string key)
     lock_guard<mutex>lock(lists_mutex);
     if(lists.count(key))return "list";
   }
+  // set zset hash stream vectorset
   return "none";
 }
 

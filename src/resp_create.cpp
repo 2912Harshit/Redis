@@ -26,11 +26,14 @@ string create_resp_array(int client_fd, deque<string> &list, int start, int end)
   string resp_array = "*" + to_string(end - start + 1) + "\r\n";
   for (int i = start; i <= end; i++)
   {
-    cout << list[i] << " ";
     resp_array.append(create_bulk_string(list[i]));
   }
-  cout << endl;
   return resp_array;
+}
+
+string create_simple_error(string msg)
+{
+  return "-ERR "+msg;
 }
 
 
