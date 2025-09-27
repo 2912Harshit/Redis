@@ -149,7 +149,7 @@ string handle_type_of(string key,std::shared_ptr<StreamHandler>&StreamHandler_pt
     if(lists.count(key))return "list";
   }
   {
-    lock_guard<mutex>lock(m_stream_mutex);
+    lock_guard<recursive_mutex>lock(m_stream_recursive_mutex);
     if(StreamHandler_ptr->m_streams.count(key))return "stream";
   }
   // set zset hash vectorset
