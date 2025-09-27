@@ -169,8 +169,10 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
             std::cout<<id<<" "<<(seqIt->second).begin()->first;
             startSecondId=0;
             if(seqIt==endSeqIt && it==endIt)break;
+            ++seqIt;
         }
         if(endIt==it)break;
+        ++it;
     }
     
     return res;
