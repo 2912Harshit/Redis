@@ -17,7 +17,7 @@ class Stream{
         std::map<unsigned long,
                     std::map<unsigned long,
                             std::map<std::string,std::string>>>m_streamStore;
-        std::mutex m_streamStore_mutex;
+        std::recursive_mutex m_streamStore_mutex;
 
     
     public:
@@ -36,6 +36,6 @@ class StreamHandler{
         std::unordered_map<std::string,std::unique_ptr<Stream>>m_streams;
         std::tuple<unsigned long,unsigned long>parseEntryId(const std::string &streamName,const std::string &entryId);
         std::string xaddHandler(std::deque<std::string>&parsed_request);
-        void xrangeHandler(int client_fd,std::deque<std::string>&parsed_request);
+        std::string xrangeHandler(int client_fd,std::deque<std::string>&parsed_request);
 
 };

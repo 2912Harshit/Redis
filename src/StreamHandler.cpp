@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <iostream>
-#include <mutex>
+#include <recursive_mutex>
 #include <string>
 #include <deque>
 #include <map>
@@ -22,14 +22,14 @@ std::tuple<unsigned long,unsigned long>StreamHandler::parseEntryId(const std::st
     auto separatorPos=unquotedEntryId.find('-');
     unsigned long firstId{},secondId{};
     if(unquotedEntryId.substr(0,separatorPos)=="*"){
-        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
         m_streams[streamName]->setFirstIdDefault();
     }
     else
     {
         firstId=std::stoul(unquotedEntryId.substr(0,separatorPos));
         if(unquotedEntryId.substr(separatorPos+1)=="*"){
-            std::lock_guard<std::mutex>lock(m_stream_mutex);
+            std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
             m_streams[streamName]->setSecondIdDefault();
         }
         else{
@@ -52,7 +52,7 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     }
     std::string streamName=parsed_request[1];
     {
-        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
             if(m_streams.find(streamName)==m_streams.end()){
                 m_streams[streamName]=std::make_unique<Stream>(streamName);
             }
@@ -68,12 +68,12 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
         fieldValues[field]=value;
     }
 
-    std::lock_guard<std::mutex>lock(m_stream_mutex);
+    std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
     return m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
 }
 
 std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::map<std::string,std::string>&fieldValues){
-    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
+    std::lock_guard<std::recursive_mutex>lock(Stream::m_streamStore_recursive_mutex);
     if(firstIdDefault){
         auto now=std::chrono::system_clock::now();
         entryFirstId = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -102,12 +102,12 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
 
 }
 
-void StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_request){
+std::string StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_request){
     std::cout<<"xrange handler function called \n";
     std::string streamName=parsed_request[1];
     std::deque<std::string>dq;
     {
-        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
         if(!m_streams.count(streamName)){
             send_array(client_fd,dq);
             return;
@@ -118,7 +118,7 @@ void StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_r
     auto endId=parsed_request[3];
     std::map<std::string,std::map<std::string,std::string>>entries;
     {
-        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
         entries= m_streams[streamName]->GetEntriesInRange(startId,endId);
     }
     
@@ -137,23 +137,14 @@ void StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_r
         outerDq.push_back(create_resp_array(innerDq));
         finalDq.push_back(create_resp_array(outerDq,0,INT_MAX,true));
     }
-    if(parsed_request[0]!="streams"){
-        send_array(client_fd,finalDq,0,INT_MAX,true);
-        return;
-    }
-    else{
-        std::deque<std::string>dq;
-        dq.push_back(create_bulk_string(streamName));
-        dq.push_back(create_resp_array(finalDq,0,INT_MAX,true));
-        dq.push_back(create_resp_array(dq,0,INT_MAX,true));
-        send_array(client_fd,dq,2,2,true);
-    }
+    return create_resp_array(finalDq,0,INT_MAX,true);
+    
     
 }
 
 std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
     std::cout<<"get entries in range \n";
-    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
+    std::lock_guard<std::recursive_mutex>lock(Stream::m_streamStore_recursive_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
 
     std::map<std::string,std::map<std::string,std::string>>res;

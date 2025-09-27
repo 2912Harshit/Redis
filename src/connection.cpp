@@ -11,6 +11,7 @@
 #include "resp_send.h"
 #include "utils.h"
 #include "StreamHandler.h"
+#include "resp_create.h"
 
 using namespace std;
 
@@ -168,28 +169,31 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       send(client_fd,resp.c_str(),resp.size(),0);
     }
     else if(command=="xrange"){
-      StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+      string resp=StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+      send(client_fd,resp.c_str(),resp.size(),0);
     }
     else if(command=="xread"){
+      unique_lock<recursive_mutex>lock(m_stream_recursive_mutex);
       string type=parsed_request[1];
       to_lowercase(type);
       if(type=="streams"){
         parsed_request.pop_front();
-        string id=parsed_request.back();
-        string streamName=parsed_request[1];
-        parsed_request.pop_back();
-        {
-          lock_guard<mutex>lock(m_stream_mutex);
+        deque<string>ids;
+        deque<string>streamNames;
+        deque<string>resp_keys;
+        int mid=(parsed_request.size()-1)/2+1;
+        for(int i=1;i<mid;i++){
+          string streamName=parsed_request[i];
+          string id=parsed_request[mid+i-1];
           if(StreamHandler_ptr->m_streams.count(streamName)){
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=StreamHandler_ptr->m_streams[streamName]->parseRangeQuery(id,"+");
-            parsed_request.push_back(to_string(startFirstId)+"-"+to_string(startSecondId+1));
-            parsed_request.push_back("+");
+            deque<string>dq={"streams",to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
+            resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+StreamHandler_ptr->xrangeHandler(client_fd,dq));
           }else{
-            send_empty_array(client_fd);
-            break;
+            resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
           }
         }
-        StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+        send_array(client_fd,resp_keys,0,INT_MAX,true);
       }
     }
   }
