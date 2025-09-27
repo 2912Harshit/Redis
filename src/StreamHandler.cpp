@@ -148,8 +148,8 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
     std::cout<<startFirstId<<" "<<startSecondId<<" "<<endFirstId<<" "<<endSecondId<<"\n";
     auto it=startFirstId==0?m_streamStore.begin():m_streamStore.lower_bound(startFirstId);
     auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId);
-    if(endFirstId!=0 && endIt!=m_streamStore.begin())--endIt;
     std::cout<<endIt->first<<"\n";
+    if(endFirstId!=0 && endIt!=m_streamStore.begin())--endIt;
     std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;
     bool hasEndSeqIt = false;
     if (endFirstId != 0 && endIt != m_streamStore.end()) {
