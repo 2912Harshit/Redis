@@ -167,6 +167,9 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       string resp=StreamHandler_ptr->xaddHandler(parsed_request);
       send(client_fd,resp.c_str(),resp.size(),0);
     }
+    else if(command=="xrange"){
+      StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+    }
   }
 }
 
