@@ -15,17 +15,17 @@ class Stream{
         bool secondIdDefault{false};
         std::map<unsigned long,
                     std::map<unsigned long,
-                            std::unordered_map<std::string,std::string>>>m_streamStore;
+                            std::map<std::string,std::string>>>m_streamStore;
         std::mutex m_streamStore_mutex;
 
     
     public:
         Stream(const std::string &streamName):m_streamName(streamName){}
         
-        std::string AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::unordered_map<std::string,std::string>&fieldValues);
+        std::string AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::map<std::string,std::string>&fieldValues);
         void setFirstIdDefault();
         void setSecondIdDefault();
-        std::map<std::string,std::unordered_map<std::string,std::string>>GetEntriesInRange(std::string startId,std::string endId);
+        std::map<std::string,std::map<std::string,std::string>>GetEntriesInRange(std::string startId,std::string endId);
         std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>parseRangeQuery(std::string startId,std::string endId);
 
 };

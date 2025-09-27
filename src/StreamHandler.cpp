@@ -61,7 +61,7 @@ std::string StreamHandler::xaddHandler(std::vector<std::string>&parsed_request){
     std::string &entryId=parsed_request[2];
     auto [firstId,secondId]=parseEntryId(streamName,entryId);
     
-    std::unordered_map<std::string,std::string>fieldValues;
+    std::map<std::string,std::string>fieldValues;
     for(int i=3;i<parsed_request.size();i++){
         std::string field=parsed_request[i++];
         std::string value=parsed_request[i];
@@ -72,7 +72,7 @@ std::string StreamHandler::xaddHandler(std::vector<std::string>&parsed_request){
     return m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
 }
 
-std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::unordered_map<std::string,std::string>&fieldValues){
+std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::map<std::string,std::string>&fieldValues){
     std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     if(firstIdDefault){
         auto now=std::chrono::system_clock::now();
@@ -103,6 +103,7 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
 }
 
 void StreamHandler::xrangeHandler(int client_fd,std::vector<std::string>&parsed_request){
+    std::cout<<"xrange handler function called \n";
     std::string streamName=parsed_request[1];
     std::deque<std::string>dq;
     {
@@ -115,7 +116,7 @@ void StreamHandler::xrangeHandler(int client_fd,std::vector<std::string>&parsed_
 
     auto startId=parsed_request[2];
     auto endId=parsed_request[3];
-    std::map<std::string,std::unordered_map<std::string,std::string>>entries;
+    std::map<std::string,std::map<std::string,std::string>>entries;
     {
         std::lock_guard<std::mutex>lock(m_stream_mutex);
         entries= m_streams[streamName]->GetEntriesInRange(startId,endId);
@@ -139,22 +140,34 @@ void StreamHandler::xrangeHandler(int client_fd,std::vector<std::string>&parsed_
     send_array(client_fd,finalDq,0,INT_MAX,true);
 }
 
-std::map<std::string,std::unordered_map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
+std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
+    std::cout<<"get entries in range \n";
     std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
-
-    std::map<std::string,std::unordered_map<std::string,std::string>>res;
+    std::map<std::string,std::map<std::string,std::string>>res;
 
     auto it=startFirstId==0?m_streamStore.begin():m_streamStore.lower_bound(startFirstId);
-    auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId)--;
-    auto endSeqIt=endSecondId==0?m_streamStore[endIt->first].end():m_streamStore[endIt->first].upper_bound(endSecondId)--;
+    auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId);
+    if(endFirstId!=0 && endIt!=m_streamStore.begin())--endIt;
+
+    std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;
+    bool hasEndSeqIt = false;
+    if (endFirstId != 0 && endIt != m_streamStore.end()) {
+        auto &innerMap = endIt->second;
+        endSeqIt = (endSecondId == 0) ? innerMap.end()
+                                      : innerMap.upper_bound(endSecondId);
+        if (endSecondId != 0 && endSeqIt != innerMap.begin()) {
+            --endSeqIt;
+        }
+        hasEndSeqIt = true;
+    }
     while(it!=m_streamStore.end()){
         auto seqIt=startSecondId==0?m_streamStore[it->first].begin():m_streamStore[it->first].lower_bound(startSecondId);
         while(seqIt!=m_streamStore[it->first].end()){
             std::string id=std::to_string(it->first)+"-"+std::to_string(seqIt->first);
             res[id]=seqIt->second;
             startSecondId=0;
-            if(seqIt==endSeqIt)break;
+            if(seqIt==endSeqIt && it==endIt)break;
         }
         if(endIt==it)break;
     }
@@ -182,10 +195,10 @@ std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parse
     }
     else
     {
-        auto endSep=startId.find('-');
-        endMilliId=std::stoul(startId.substr(0,endSep));
+        auto endSep=endId.find('-');
+        endMilliId=std::stoul(endId.substr(0,endSep));
         if(endSep!=std::string::npos){
-            endSeqId=std::stoul(startId.substr(endSep+1));
+            endSeqId=std::stoul(endId.substr(endSep+1));
         }
     }
     return std::make_tuple(startMilliId,startSeqId,endMilliId,endSeqId);
