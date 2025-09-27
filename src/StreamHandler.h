@@ -17,7 +17,7 @@ class Stream{
         std::map<unsigned long,
                     std::map<unsigned long,
                             std::map<std::string,std::string>>>m_streamStore;
-        std::recursive_mutex m_streamStore_mutex;
+        std::recursive_mutex m_streamStore_recursive_mutex;
 
     
     public:
