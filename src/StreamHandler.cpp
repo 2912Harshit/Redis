@@ -156,7 +156,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         auto &innerMap = endIt->second;
         endSeqIt = (endSecondId == 0) ? innerMap.end()
                                       : innerMap.upper_bound(endSecondId);
-        if (endSecondId != 0 && endSeqIt != innerMap.begin()) {
+        if (endSeqIt != innerMap.begin()) {
             --endSeqIt;
         }
         hasEndSeqIt = true;
