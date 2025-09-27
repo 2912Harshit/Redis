@@ -161,6 +161,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         }
         hasEndSeqIt = true;
     }
+    std::cout<<endSeqIt->first<<std::endl;
     while(it!=m_streamStore.end()){
         auto seqIt=startSecondId==0?m_streamStore[it->first].begin():m_streamStore[it->first].lower_bound(startSecondId);
         while(seqIt!=m_streamStore[it->first].end()){
