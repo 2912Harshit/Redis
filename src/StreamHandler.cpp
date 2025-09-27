@@ -3,10 +3,14 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <deque>
+#include <map>
+#include <unordered_map>
 
 #include "StreamHandler.h"
 #include "state.h"
 #include "resp_create.h"
+#include "resp_send.h"
 
 
 std::tuple<unsigned long,unsigned long>StreamHandler::parseEntryId(const std::string &streamName,const std::string &entryId){
@@ -69,7 +73,7 @@ std::string StreamHandler::xaddHandler(std::vector<std::string>&parsed_request){
 }
 
 std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::unordered_map<std::string,std::string>&fieldValues){
-    std::lock_guard<std::mutex>lock(m_streamStore_mutex);
+    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     if(firstIdDefault){
         auto now=std::chrono::system_clock::now();
         entryFirstId = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -97,5 +101,98 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
     return create_bulk_string(resString);
 
 }
+
+void StreamHandler::xrangeHandler(int client_fd,std::vector<std::string>&parsed_request){
+    std::string streamName=parsed_request[1];
+    std::deque<std::string>dq;
+    {
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        if(!m_streams.count(streamName)){
+            send_array(client_fd,dq);
+            return;
+        }
+    }
+
+    auto startId=parsed_request[2];
+    auto endId=parsed_request[3];
+    std::map<std::string,std::unordered_map<std::string,std::string>>entries;
+    {
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
+        entries= m_streams[streamName]->GetEntriesInRange(startId,endId);
+    }
+    
+    std::deque<std::string>finalDq;
+    for(auto &entry:entries){
+        std::deque<std::string>outerDq;
+        std::string id=entry.first;
+        outerDq.push_back(create_bulk_string(id));
+        std::deque<std::string>innerDq;
+        for(auto &keys:entry.second){
+            std::string key=keys.first;
+            std::string value=keys.second;
+            innerDq.push_back(key);
+            innerDq.push_back(value);
+        }
+        outerDq.push_back(create_resp_array(innerDq));
+        finalDq.push_back(create_resp_array(outerDq,0,INT_MAX,true));
+    }
+    send_array(client_fd,finalDq,0,INT_MAX,true);
+}
+
+std::map<std::string,std::unordered_map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
+    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
+    auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
+
+    std::map<std::string,std::unordered_map<std::string,std::string>>res;
+
+    auto it=startFirstId==0?m_streamStore.begin():m_streamStore.lower_bound(startFirstId);
+    auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId)--;
+    auto endSeqIt=endSecondId==0?m_streamStore[endIt->first].end():m_streamStore[endIt->first].upper_bound(endSecondId)--;
+    while(it!=m_streamStore.end()){
+        auto seqIt=startSecondId==0?m_streamStore[it->first].begin():m_streamStore[it->first].lower_bound(startSecondId);
+        while(seqIt!=m_streamStore[it->first].end()){
+            std::string id=std::to_string(it->first)+"-"+std::to_string(seqIt->first);
+            res[id]=seqIt->second;
+            startSecondId=0;
+            if(seqIt==endSeqIt)break;
+        }
+        if(endIt==it)break;
+    }
+    
+    return res;
+
+}
+
+std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>parseRangeQuery(std::string startId,std::string endId){
+    unsigned long startMilliId{},startSeqId{},endMilliId{},endSeqId{};
+    if(startId=="-"){
+        startMilliId=0;
+        startSeqId=0;
+    }
+    else{
+        auto startSep=startId.find('-');
+        startMilliId=std::stoul(startId.substr(0,startSep));
+        if(startSep!=std::string::npos){
+            startSeqId=std::stoul(startId.substr(startSep+1));
+        }
+    }
+    if(endId=="+"){
+        endMilliId=0;
+        endSeqId=0;
+    }
+    else
+    {
+        auto endSep=startId.find('-');
+        endMilliId=std::stoul(startId.substr(0,endSep));
+        if(endSep!=std::string::npos){
+            endSeqId=std::stoul(startId.substr(endSep+1));
+        }
+    }
+    return std::make_tuple(startMilliId,startSeqId,endMilliId,endSeqId);
+}
+
+
+
+
 
 

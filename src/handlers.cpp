@@ -62,7 +62,7 @@ string handle_lpop(string &key)
 void handle_multiple_lpop(int client_fd, string &key, int no_of_removals)
 {
   lock_guard<mutex> lock1(lists_mutex);
-  string resp_array = create_resp_array(client_fd, lists[key], 0, no_of_removals - 1);
+  string resp_array = create_resp_array(lists[key], 0, no_of_removals - 1);
   for (int i = 0; i < no_of_removals; i++)
   {
     lists[key].pop_front();

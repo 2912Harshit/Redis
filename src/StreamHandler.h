@@ -25,7 +25,8 @@ class Stream{
         std::string AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::unordered_map<std::string,std::string>&fieldValues);
         void setFirstIdDefault();
         void setSecondIdDefault();
-
+        std::map<std::string,std::unordered_map<std::string,std::string>>GetEntriesInRange(std::string startId,std::string endId);
+        std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>parseRangeQuery(std::string startId,std::string endId);
 
 };
 
@@ -34,5 +35,6 @@ class StreamHandler{
         std::unordered_map<std::string,std::unique_ptr<Stream>>m_streams;
         std::tuple<unsigned long,unsigned long>parseEntryId(const std::string &streamName,const std::string &entryId);
         std::string xaddHandler(std::vector<std::string>&parsed_request);
+        void xrangeHandler(int client_fd,std::vector<std::string>&parsed_request);
 
 };

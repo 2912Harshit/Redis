@@ -37,9 +37,9 @@ void send_null_array(int client_fd)
   string resp_null_array = "*-1\r\n";
   send(client_fd, resp_null_array.c_str(), resp_null_array.size(), 0);
 }
-void send_array(int client_fd, deque<string> &list, int start, int end)
+void send_array(int client_fd, deque<string> &list, int start, int end, bool dontEncode)
 {
-  string resp_array = create_resp_array(client_fd, list, start, end);
+  string resp_array = create_resp_array(list, start, end, dontEncode);
   send(client_fd, resp_array.c_str(), resp_array.size(), 0);
 }
 void send_empty_array(int client_fd)
