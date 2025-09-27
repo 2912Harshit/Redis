@@ -109,8 +109,7 @@ std::string StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&p
     {
         std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
         if(!m_streams.count(streamName)){
-            send_array(client_fd,dq);
-            return;
+            return create_resp_array(dq);
         }
     }
 
