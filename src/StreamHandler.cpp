@@ -163,7 +163,7 @@ std::map<std::string,std::unordered_map<std::string,std::string>>Stream::GetEntr
 
 }
 
-std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>parseRangeQuery(std::string startId,std::string endId){
+std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parseRangeQuery(std::string startId,std::string endId){
     unsigned long startMilliId{},startSeqId{},endMilliId{},endSeqId{};
     if(startId=="-"){
         startMilliId=0;
