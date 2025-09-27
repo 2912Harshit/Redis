@@ -182,6 +182,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
           if(StreamHandler_ptr->m_streams.count(streamName)){
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=StreamHandler_ptr->m_streams[streamName]->parseRangeQuery(id,"+");
             parsed_request.push_back(to_string(startFirstId)+"-"+to_string(startSecondId+1));
+            parsed_request.push_back("+");
           }else{
             send_empty_array(client_fd);
             break;
