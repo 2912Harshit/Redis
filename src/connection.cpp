@@ -172,7 +172,8 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
     }
     else if(command=="xread"){
       string type=parsed_request[1];
-      if(type=="STREAM"){
+      to_lowercase(type);
+      if(type=="streams"){
         parsed_request.pop_front();
         string id=parsed_request.back();
         string streamName=parsed_request[2];
