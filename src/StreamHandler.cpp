@@ -144,13 +144,16 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
     std::cout<<"get entries in range \n";
     std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
+
     std::map<std::string,std::map<std::string,std::string>>res;
-    std::cout<<startFirstId<<" "<<startSecondId<<" "<<endFirstId<<" "<<endSecondId<<"\n";
+
     auto it=startFirstId==0?m_streamStore.begin():m_streamStore.lower_bound(startFirstId);
+
     auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId);
     if(endIt!=m_streamStore.begin())--endIt;
-    std::cout<<endIt->first<<"\n";
-    std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;
+
+    std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;\
+
     bool hasEndSeqIt = false;
     if (endIt != m_streamStore.end()) {
         auto &innerMap = endIt->second;
@@ -161,7 +164,8 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         }
         hasEndSeqIt = true;
     }
-    std::cout<<endSeqIt->first<<std::endl;
+
+    
     while(it!=m_streamStore.end()){
         auto seqIt=startSecondId==0?m_streamStore[it->first].begin():m_streamStore[it->first].lower_bound(startSecondId);
         while(seqIt!=m_streamStore[it->first].end()){
