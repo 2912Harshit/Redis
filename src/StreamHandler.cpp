@@ -137,7 +137,18 @@ void StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_r
         outerDq.push_back(create_resp_array(innerDq));
         finalDq.push_back(create_resp_array(outerDq,0,INT_MAX,true));
     }
-    send_array(client_fd,finalDq,0,INT_MAX,true);
+    if(parsed_request[0]!="streams"){
+        send_array(client_fd,finalDq,0,INT_MAX,true);
+        return;
+    }
+    else{
+        std::deque<std::string>dq;
+        dq.push_back(create_bulk_string(streamName));
+        dq.push_back(create_resp_array(finalDq,0,INT_MAX,true));
+        dq.push_back(create_resp_array(dq,0,INT_MAX,true));
+        send_array(client_fd,dq,2,2,true);
+    }
+    
 }
 
 std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
