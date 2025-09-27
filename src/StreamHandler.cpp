@@ -152,7 +152,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
     auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId);
     if(endIt!=m_streamStore.begin())--endIt;
 
-    std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;\
+    std::map<unsigned long,std::map<std::string, std::string>>::iterator endSeqIt;
 
     bool hasEndSeqIt = false;
     if (endIt != m_streamStore.end()) {
