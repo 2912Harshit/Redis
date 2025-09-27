@@ -217,9 +217,3 @@ std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parse
     }
     return std::make_tuple(startMilliId,startSeqId,endMilliId,endSeqId);
 }
-
-
-
-
-
-
