@@ -145,7 +145,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
     std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
     std::map<std::string,std::map<std::string,std::string>>res;
-
+    std::cout<<startFirstId<<" "<<startSecondId<<" "<<endFirstId<<" "<<endSecondId<<"\n";
     auto it=startFirstId==0?m_streamStore.begin():m_streamStore.lower_bound(startFirstId);
     auto endIt=endFirstId==0?m_streamStore.end():m_streamStore.upper_bound(endFirstId);
     if(endFirstId!=0 && endIt!=m_streamStore.begin())--endIt;
