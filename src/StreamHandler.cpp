@@ -46,7 +46,7 @@ void Stream::setSecondIdDefault(){
     secondIdDefault=true;
 }
 
-std::string StreamHandler::xaddHandler(std::vector<std::string>&parsed_request){
+std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     if(parsed_request.size()<4 || (parsed_request.size()-3)%2!=0){
         return create_simple_error("wrong number of arguments for 'xadd' command");
     }
@@ -102,7 +102,7 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
 
 }
 
-void StreamHandler::xrangeHandler(int client_fd,std::vector<std::string>&parsed_request){
+void StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_request){
     std::cout<<"xrange handler function called \n";
     std::string streamName=parsed_request[1];
     std::deque<std::string>dq;
@@ -165,9 +165,14 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         hasEndSeqIt = true;
     }
 
-    
+
     while(it!=m_streamStore.end()){
         auto seqIt=startSecondId==0?m_streamStore[it->first].begin():m_streamStore[it->first].lower_bound(startSecondId);
+        if(seqIt==m_streamStore[it->first].end()){
+            ++it;
+            startSecondId=0;
+            continue;
+        }
         while(seqIt!=m_streamStore[it->first].end()){
             std::string id=std::to_string(it->first)+"-"+std::to_string(seqIt->first);
             res[id]=seqIt->second;

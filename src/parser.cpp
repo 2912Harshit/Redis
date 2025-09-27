@@ -1,8 +1,9 @@
 #include "parser.h"
+#include <deque>
 
-std::vector<std::string> parse_redis_command(const std::string &buffer)
+std::deque<std::string> parse_redis_command(const std::string &buffer)
 {
-  std::vector<std::string> tokens;
+  std::deque<std::string> tokens;
   size_t pos = 0;
 
   if (buffer.empty() || buffer[pos] != '*')

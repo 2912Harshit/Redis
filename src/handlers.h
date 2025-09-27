@@ -2,11 +2,12 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include "StreamHandler.h"
 using namespace std;
 
-int handle_rpush(std::vector<std::string> &parsed_request, std::string &key);
-int handle_lpush(std::vector<std::string> &parsed_request, std::string &key);
+int handle_rpush(std::deque<std::string> &parsed_request, std::string &key);
+int handle_lpush(std::deque<std::string> &parsed_request, std::string &key);
 std::string handle_lpop(std::string &key);
 void handle_multiple_lpop(int client_fd, std::string &key, int no_of_removals);
 void handle_blpop(int client_fd, std::string &key, float time);

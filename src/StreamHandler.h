@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <deque>
 
 class Stream{
     private:
@@ -34,7 +35,7 @@ class StreamHandler{
     public:
         std::unordered_map<std::string,std::unique_ptr<Stream>>m_streams;
         std::tuple<unsigned long,unsigned long>parseEntryId(const std::string &streamName,const std::string &entryId);
-        std::string xaddHandler(std::vector<std::string>&parsed_request);
-        void xrangeHandler(int client_fd,std::vector<std::string>&parsed_request);
+        std::string xaddHandler(std::deque<std::string>&parsed_request);
+        void xrangeHandler(int client_fd,std::deque<std::string>&parsed_request);
 
 };

@@ -29,7 +29,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       return;
     }
     buffer[bytes_read] = '\0';
-    vector<string> parsed_request = parse_redis_command(buffer);
+    deque<string> parsed_request = parse_redis_command(buffer);
     if(parsed_request.empty()) continue;
     cout<<"parsed_request: "<<parsed_request[0]<<" "<<client_fd<<endl;
     string command = parsed_request[0];
@@ -169,6 +169,26 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
     }
     else if(command=="xrange"){
       StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+    }
+    else if(command=="xread"){
+      string type=parsed_request[1];
+      if(type=="STREAM"){
+        parsed_request.pop_front();
+        string id=parsed_request.back();
+        string streamName=parsed_request[2];
+        parsed_request.pop_back();
+        {
+          lock_guard<mutex>lock(m_stream_mutex);
+          if(StreamHandler_ptr->m_streams.count(streamName)){
+            auto [startFirstId,startSecondId,endFirstId,endSecondId]=StreamHandler_ptr->m_streams[streamName]->parseRangeQuery(id,"+");
+            parsed_request.push_back(to_string(startFirstId)+"-"+to_string(startSecondId+1));
+          }else{
+            send_empty_array(client_fd);
+            break;
+          }
+        }
+        StreamHandler_ptr->xrangeHandler(client_fd,parsed_request);
+      }
     }
   }
 }
