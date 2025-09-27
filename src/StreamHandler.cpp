@@ -166,6 +166,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         while(seqIt!=m_streamStore[it->first].end()){
             std::string id=std::to_string(it->first)+"-"+std::to_string(seqIt->first);
             res[id]=seqIt->second;
+            std::cout<<id<<" "<<(seqIt->second).begin()->first;
             startSecondId=0;
             if(seqIt==endSeqIt && it==endIt)break;
         }
