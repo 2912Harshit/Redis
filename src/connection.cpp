@@ -187,7 +187,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
           string id=parsed_request[mid+i-1];
           if(StreamHandler_ptr->m_streams.count(streamName)){
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=StreamHandler_ptr->m_streams[streamName]->parseRangeQuery(id,"+");
-            deque<string>dq={"streams",to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
+            deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+StreamHandler_ptr->xrangeHandler(client_fd,dq));
           }else{
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
