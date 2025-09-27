@@ -6,6 +6,7 @@
 #include <map>
 #include <unordered_map>
 #include <deque>
+#include <mutex>
 
 class Stream{
     private:
