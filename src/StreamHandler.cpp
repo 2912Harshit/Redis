@@ -77,6 +77,7 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     {
         unique_lock<mutex>lock1(blocked_streams_mutex);
         for(auto &[required_id,client_fd]:blocked_streams[streamName]){
+            cout<<streamName<<" "<<id<<" "<<required_id<<endl;
             if(required_id<id)clients_cvs[client_fd].notify_one();
             else break;
         }
@@ -274,9 +275,6 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
     }
     cout<<"result size : "<<result.size()<<endl;
-    if(!has_data){
-        return {};
-    }
     return result;
     
 
