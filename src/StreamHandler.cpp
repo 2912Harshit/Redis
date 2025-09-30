@@ -11,6 +11,9 @@
 #include "state.h"
 #include "resp_create.h"
 #include "resp_send.h"
+#include "handlers.h"
+
+using namespace std;
 
 
 std::tuple<unsigned long,unsigned long>StreamHandler::parseEntryId(const std::string &streamName,const std::string &entryId){
@@ -22,14 +25,14 @@ std::tuple<unsigned long,unsigned long>StreamHandler::parseEntryId(const std::st
     auto separatorPos=unquotedEntryId.find('-');
     unsigned long firstId{},secondId{};
     if(unquotedEntryId.substr(0,separatorPos)=="*"){
-        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
         m_streams[streamName]->setFirstIdDefault();
     }
     else
     {
         firstId=std::stoul(unquotedEntryId.substr(0,separatorPos));
         if(unquotedEntryId.substr(separatorPos+1)=="*"){
-            std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
+            std::lock_guard<std::mutex>lock(m_stream_mutex);
             m_streams[streamName]->setSecondIdDefault();
         }
         else{
@@ -52,7 +55,7 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     }
     std::string streamName=parsed_request[1];
     {
-        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
             if(m_streams.find(streamName)==m_streams.end()){
                 m_streams[streamName]=std::make_unique<Stream>(streamName);
             }
@@ -68,12 +71,21 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
         fieldValues[field]=value;
     }
 
-    std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
-    return m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
+    std::unique_lock<std::mutex>lock(m_stream_mutex);
+    string id=m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
+    lock.unlock();
+    {
+        unique_lock<mutex>lock1(blocked_streams_mutex);
+        for(auto &[required_id,client_fd]:blocked_streams[streamName]){
+            if(required_id<id)clients_cvs[client_fd].notify_one();
+            else break;
+        }
+    }
+    return id;
 }
 
 std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::map<std::string,std::string>&fieldValues){
-    std::lock_guard<std::recursive_mutex>lock(Stream::m_streamStore_recursive_mutex);
+    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     if(firstIdDefault){
         auto now=std::chrono::system_clock::now();
         entryFirstId = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -102,12 +114,12 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
 
 }
 
-std::string StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&parsed_request){
+std::string StreamHandler::xrangeHandler(std::deque<std::string>&parsed_request){
     std::cout<<"xrange handler function called \n";
     std::string streamName=parsed_request[1];
     std::deque<std::string>dq;
     {
-        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
         if(!m_streams.count(streamName)){
             return create_resp_array(dq);
         }
@@ -117,7 +129,7 @@ std::string StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&p
     auto endId=parsed_request[3];
     std::map<std::string,std::map<std::string,std::string>>entries;
     {
-        std::lock_guard<std::recursive_mutex>lock(m_stream_recursive_mutex);
+        std::lock_guard<std::mutex>lock(m_stream_mutex);
         entries= m_streams[streamName]->GetEntriesInRange(startId,endId);
     }
     
@@ -143,7 +155,7 @@ std::string StreamHandler::xrangeHandler(int client_fd,std::deque<std::string>&p
 
 std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
     std::cout<<"get entries in range \n";
-    std::lock_guard<std::recursive_mutex>lock(Stream::m_streamStore_recursive_mutex);
+    std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
 
     std::map<std::string,std::map<std::string,std::string>>res;
@@ -217,3 +229,54 @@ std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parse
     }
     return std::make_tuple(startMilliId,startSeqId,endMilliId,endSeqId);
 }
+
+deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool ignoreEmptyArray){
+        auto[streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
+        deque<string>resp_keys;
+        for(int i=0;i<streamKeys.size();i++){
+          string streamName=streamKeys[i];
+          string id=streamIds[i];
+          if(m_streams.count(streamName)){
+            unique_lock<mutex>lock(m_stream_mutex);
+            auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
+            lock.unlock();
+            deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
+            resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+xrangeHandler(dq));
+          }else if(!ignoreEmptyArray){
+            resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
+          }
+        }
+        return resp_keys;
+}
+
+deque<string> StreamHandler::xreadBlocked$Handler(std::deque<std::string>&parsed_request){
+    return {};
+}
+deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::string>&parsed_request){
+    unique_lock<mutex>lock(blocked_streams_mutex);
+    int waiting_time=stoi(parsed_request[2]);
+    bool has_data=false;
+
+    auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
+    for(int i=0;i<streamKeys.size();i++){
+        blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
+    }
+
+    auto &cv=clients_cvs[client_fd];
+    if(waiting_time==0){
+        cv.wait(lock,[&](){return !(xreadHandler(parsed_request,true)).empty(); });
+    }else{
+        auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(waiting_time));
+        has_data = cv.wait_until(lock, deadline, [&](){ return !(xreadHandler(parsed_request,true)).empty(); });
+    }
+    for(int i=0;i<streamKeys.size();i++){
+        blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
+    }
+    if(!has_data){
+        return {};
+    }
+    return xreadHandler(parsed_request,true);
+    
+
+}
+

@@ -15,5 +15,8 @@ void handle_blpop(int client_fd, std::string &key, float time);
 void set_key_value(std::string key, std::string value, int delay_time);
 void remove_key(std::string key);
 std::string handle_type_of(std::string key,std::shared_ptr<StreamHandler>&StreamHandler_ptr);
+pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_request);
+string get_stream_name(deque<string>&parsed_request);
+
 
 

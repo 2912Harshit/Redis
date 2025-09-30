@@ -149,11 +149,34 @@ string handle_type_of(string key,std::shared_ptr<StreamHandler>&StreamHandler_pt
     if(lists.count(key))return "list";
   }
   {
-    lock_guard<recursive_mutex>lock(m_stream_recursive_mutex);
+    lock_guard<mutex>lock(m_stream_mutex);
     if(StreamHandler_ptr->m_streams.count(key))return "stream";
   }
   // set zset hash vectorset
   return "none";
+}
+pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_request){
+  deque<string>streamKeys;
+  deque<string>streamIds;
+  if(parsed_request[1]!="BLOCK"){
+    int n=(parsed_request.size()-2)/2+2;
+    for(int i=2;i<(n);i++){
+      streamKeys.push_back(parsed_request[i]);
+      streamIds.push_back(parsed_request[n+(i-2)]);
+    }
+  }else{
+    int n=(parsed_request.size()-4)/2+4;
+    for(int i=4;i<(n);i++){
+      streamKeys.push_back(parsed_request[i]);
+      streamIds.push_back(parsed_request[n+(i-4)]);
+    }
+  }
+  return {streamKeys,streamIds};
+}
+string get_stream_name(deque<string>&parsed_request){
+  if(parsed_request[1]!="BLOCK"){
+    return parsed_request[1];
+  }else return parsed_request[3];
 }
 
 
