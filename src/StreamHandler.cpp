@@ -214,7 +214,7 @@ std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parse
     if(startId=="$"){
         startId=to_string(m_latestFirstId)+"-"+to_string(m_latestSecondId);
     }
-    cout<<"parse range query "<<startId<<" "<<endId<<endl;
+    cout<<"parse range query : "<<startId<<" "<<endId<<endl;
     if(startId=="-"){
         startMilliId=0;
         startSeqId=0;
@@ -280,6 +280,13 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
 
     auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
     for(int i=0;i<streamKeys.size();i++){
+        if(streamIds[i]=="$"){
+            {
+                lock_guard<mutex>lock(m_stream_mutex);
+                auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
+                streamIds[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+            }
+        }
         cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
         blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
     }
