@@ -272,6 +272,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     }else{
         
         has_data = cv.wait_for(lock, chrono::milliseconds(waiting_time), [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
+        cout<<"wait over"<<endl;
     }
     for(int i=0;i<streamKeys.size();i++){
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
