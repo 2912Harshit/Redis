@@ -256,6 +256,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     unique_lock<mutex>lock(blocked_streams_mutex);
     int waiting_time=stoi(parsed_request[2]);
     bool has_data=false;
+    deque<string>result;
 
     auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
     for(int i=0;i<streamKeys.size();i++){
@@ -264,10 +265,10 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
 
     auto &cv=clients_cvs[client_fd];
     if(waiting_time==0){
-        cv.wait(lock,[&](){return !(xreadHandler(parsed_request,true)).empty(); });
+        cv.wait(lock,[&](){return !(result=xreadHandler(parsed_request,true)).empty(); });
     }else{
         auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(waiting_time));
-        has_data = cv.wait_until(lock, deadline, [&](){ return !(xreadHandler(parsed_request,true)).empty(); });
+        has_data = cv.wait_until(lock, deadline, [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
     }
     for(int i=0;i<streamKeys.size();i++){
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
@@ -275,7 +276,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     if(!has_data){
         return {};
     }
-    return xreadHandler(parsed_request,true);
+    return result;
     
 
 }
