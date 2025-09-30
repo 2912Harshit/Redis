@@ -72,18 +72,18 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     }
 
     std::unique_lock<std::mutex>lock(m_stream_mutex);
-    string id=m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
+    string result_id=m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
     lock.unlock();
     {
         unique_lock<mutex>lock1(blocked_streams_mutex);
         cout<<streamName<<" size : "<<blocked_streams[streamName].size()<<endl;
         for(auto &[required_id,client_fd]:blocked_streams[streamName]){
-            cout<<"one : "<<streamName<<" "<<id<<" "<<required_id<<endl;
-            if(required_id<id)clients_cvs[client_fd].notify_one();
+            cout<<"one : "<<streamName<<" "<<entryId<<" "<<required_id<<endl;
+            if(required_id<entryId)clients_cvs[client_fd].notify_one();
             else break;
         }
     }
-    return id;
+    return result_id;
 }
 
 std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySecondId,std::map<std::string,std::string>&fieldValues){
