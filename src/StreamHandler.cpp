@@ -15,6 +15,9 @@
 
 using namespace std;
 
+pair<unsigned long,unsigned long>Stream::GetLatestId(){
+    return {m_latestFirstId,m_latestSecondId};
+}
 
 std::tuple<unsigned long,unsigned long>StreamHandler::parseEntryId(const std::string &streamName,const std::string &entryId){
     std::string unquotedEntryId = entryId;
@@ -274,6 +277,13 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
     for(int i=0;i<streamKeys.size();i++){
         // cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
+        if(streamIds[i]=="$"){
+            {
+                lock_guard<mutex>lock(m_stream_mutex);
+                auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
+                streamKeys[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+            }
+        }
         blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
     }
 

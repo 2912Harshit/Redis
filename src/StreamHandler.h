@@ -29,6 +29,7 @@ class Stream{
         void setSecondIdDefault();
         std::map<std::string,std::map<std::string,std::string>>GetEntriesInRange(std::string startId,std::string endId);
         std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>parseRangeQuery(std::string startId,std::string endId);
+        std::pair<unsigned long,unsigned long>GetLatestId();
 
 };
 
