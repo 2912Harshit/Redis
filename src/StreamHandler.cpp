@@ -252,7 +252,6 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
             // cout<<"ye to h bhai"<<endl;
             if(id=="$"){
                 {
-                    lock_guard<mutex>lock(m_stream_mutex);
                     auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
                     cout<<latestFirstId<<" "<<latestSecondId<<endl;
                     id=to_string(latestFirstId)+"-"+to_string(latestSecondId);
