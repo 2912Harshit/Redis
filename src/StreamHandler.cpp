@@ -73,6 +73,8 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
 
     std::unique_lock<std::mutex>lock(m_stream_mutex);
     string result_id=m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
+          cout<<"m_stream ka size : "<<m_streams.size()<<endl;
+
     lock.unlock();
     {
         unique_lock<mutex>lock1(blocked_streams_mutex);
@@ -239,7 +241,6 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
           string streamName=streamKeys[i];
           string id=streamIds[i];
           cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
-          cout<<"m_stream ka size : "<<m_streams.size()<<endl;
           if(m_streams.count(streamName)){
             cout<<"ye to h bhai"<<endl;
             unique_lock<mutex>lock(m_stream_mutex);
