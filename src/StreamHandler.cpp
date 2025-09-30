@@ -239,6 +239,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
           string streamName=streamKeys[i];
           string id=streamIds[i];
           cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
+          cout<<"m_stream ka size : "<<m_streams.size()<<endl;
           if(m_streams.count(streamName)){
             cout<<"ye to h bhai"<<endl;
             unique_lock<mutex>lock(m_stream_mutex);
