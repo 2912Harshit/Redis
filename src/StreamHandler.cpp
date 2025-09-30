@@ -284,10 +284,11 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
             {
                 lock_guard<mutex>lock(m_stream_mutex);
                 auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
-                client_waiting_for_$_id[client_fd][streamKeys[i]]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+                streamIds[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+                client_waiting_for_$_id[client_fd][streamKeys[i]]=streamIds[i];
             }
         }
-        else blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
+        blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
     }
 
     auto &cv=clients_cvs[client_fd];
@@ -300,7 +301,6 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     }
     client_waiting_for_$_id.erase(client_fd);
     for(int i=0;i<streamKeys.size();i++){
-        if(streamIds[i]=="$")continue;
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
     }
     // cout<<"result size : "<<result.size()<<endl;
