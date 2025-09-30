@@ -281,7 +281,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
                 lock_guard<mutex>lock(m_stream_mutex);
                 auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
                 cout<<latestFirstId<<" "<<latestSecondId<<endl;
-                streamKeys[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+                streamIds[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
             }
         }
         cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
