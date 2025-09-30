@@ -73,14 +73,14 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
 
     std::unique_lock<std::mutex>lock(m_stream_mutex);
     string result_id=m_streams[streamName]->AddEntry(firstId,secondId,fieldValues);
-          cout<<"m_stream ka size : "<<m_streams.size()<<endl;
+          // cout<<"m_stream ka size : "<<m_streams.size()<<endl;
 
     lock.unlock();
     {
         unique_lock<mutex>lock1(blocked_streams_mutex);
-        cout<<streamName<<" size : "<<blocked_streams[streamName].size()<<endl;
+        // cout<<streamName<<" size : "<<blocked_streams[streamName].size()<<endl;
         for(auto &[required_id,client_fd]:blocked_streams[streamName]){
-            cout<<"one : "<<streamName<<" "<<entryId<<" "<<required_id<<" "<<(required_id<entryId)<<endl;
+            // cout<<"one : "<<streamName<<" "<<entryId<<" "<<required_id<<" "<<(required_id<entryId)<<endl;
             if(required_id<entryId)clients_cvs[client_fd].notify_one();
             else break;
         }
@@ -119,7 +119,7 @@ std::string Stream::AddEntry(unsigned long &entryFirstId,unsigned long &entrySec
 }
 
 std::string StreamHandler::xrangeHandler(std::deque<std::string>&parsed_request){
-    std::cout<<"xrange handler function called \n";
+// cout<<"xrange handler function called \n";
     std::string streamName=parsed_request[1];
     std::deque<std::string>dq;
     {
@@ -158,7 +158,7 @@ std::string StreamHandler::xrangeHandler(std::deque<std::string>&parsed_request)
 }
 
 std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange(std::string startId,std::string endId){
-    std::cout<<"get entries in range \n";
+// cout<<"get entries in range \n";
     std::lock_guard<std::mutex>lock(Stream::m_streamStore_mutex);
     auto [startFirstId,startSecondId,endFirstId,endSecondId]=parseRangeQuery(startId,endId);
 
@@ -193,7 +193,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
         while(seqIt!=m_streamStore[it->first].end()){
             std::string id=std::to_string(it->first)+"-"+std::to_string(seqIt->first);
             res[id]=seqIt->second;
-            // std::cout<<id<<" "<<(seqIt->second).begin()->first;
+            // std::// cout<<id<<" "<<(seqIt->second).begin()->first;
             startSecondId=0;
             if(hasEndSeqIt && seqIt==endSeqIt && it==endIt)break;
             ++seqIt;
@@ -241,15 +241,15 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
           unique_lock<mutex>lock(m_stream_mutex);
           string streamName=streamKeys[i];
           string id=streamIds[i];
-          cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
-          cout<<"m_stream ka size : "<<m_streams.size()<<endl;
+          // cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
+          // cout<<"m_stream ka size : "<<m_streams.size()<<endl;
 
           if(m_streams.count(streamName)){
-            cout<<"ye to h bhai"<<endl;
+            // cout<<"ye to h bhai"<<endl;
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
-            cout<<"startFirstId : "<<startFirstId<<" startSId : "<<startSecondId+1<<endl;
+            // cout<<"startFirstId : "<<startFirstId<<" startSId : "<<startSecondId+1<<endl;
             string keyValues=xrangeHandler(dq);
             if(keyValues[1]=='0' && ignoreEmptyArray)continue;
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+keyValues);
@@ -258,7 +258,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
             lock.unlock();
           }
         }
-        cout<<"xread handler resp keys size : "<<resp_keys.size()<<endl;
+        // cout<<"xread handler resp keys size : "<<resp_keys.size()<<endl;
         return resp_keys;
 }
 
@@ -273,7 +273,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
 
     auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
     for(int i=0;i<streamKeys.size();i++){
-        cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
+        // cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
         blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
     }
 
@@ -283,12 +283,12 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     }else{
         
         has_data = cv.wait_for(lock, chrono::milliseconds(waiting_time), [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
-        cout<<"wait over"<<endl;
+        // cout<<"wait over"<<endl;
     }
     for(int i=0;i<streamKeys.size();i++){
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
     }
-    cout<<"result size : "<<result.size()<<endl;
+    // cout<<"result size : "<<result.size()<<endl;
     return result;
     
 
