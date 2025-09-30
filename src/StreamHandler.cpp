@@ -258,11 +258,11 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
             // cout<<"startFirstId : "<<startFirstId<<" startSId : "<<startSecondId+1<<endl;
             string keyValues=xrangeHandler(dq);
+            lock.lock();
             if(keyValues[1]=='0' && ignoreEmptyArray)continue;
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+keyValues);
           }else if(!ignoreEmptyArray){
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
-            lock.unlock();
           }
         }
         // cout<<"xread handler resp keys size : "<<resp_keys.size()<<endl;
