@@ -246,10 +246,10 @@ deque<string> StreamHandler::xreadHandler(int client_fd,deque<string>&parsed_req
           string streamName=streamKeys[i];
           string id=streamIds[i];
           // cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
-          cout<<"m_stream ka size : "<<m_streams[streamName]<<endl;
           if(id=="$"){
             id=client_waiting_for_$_id[client_fd][streamName];
           }
+          cout<<"id : "<<id<<endl;
 
           if(m_streams.count(streamName)){
             // cout<<"ye to h bhai"<<endl;
