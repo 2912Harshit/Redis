@@ -273,6 +273,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     for(int i=0;i<streamKeys.size();i++){
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
     }
+    cout<<"has data : "<<has_data<<endl;
     if(!has_data){
         return {};
     }
