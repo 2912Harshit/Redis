@@ -240,6 +240,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
           string id=streamIds[i];
           cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
           if(m_streams.count(streamName)){
+            cout<<"ye to h bhai"<<endl;
             unique_lock<mutex>lock(m_stream_mutex);
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
