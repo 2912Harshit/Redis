@@ -252,7 +252,7 @@ deque<string> StreamHandler::xreadHandler(int client_fd,deque<string>&parsed_req
           cout<<"id : "<<id<<endl;
 
           if(m_streams.count(streamName)){
-            // cout<<"ye to h bhai"<<endl;
+            cout<<"ye to h bhai"<<endl;
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
