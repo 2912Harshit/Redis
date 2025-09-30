@@ -211,6 +211,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
 
 std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parseRangeQuery(std::string startId,std::string endId){
     unsigned long startMilliId{},startSeqId{},endMilliId{},endSeqId{};
+    cout<<"parse range query "<<startId<<" "<<endId<<endl;
     if(startId=="-"){
         startMilliId=0;
         startSeqId=0;
