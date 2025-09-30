@@ -52,6 +52,5 @@ class StreamHandler{
             static std::shared_ptr<StreamHandler> instance(new StreamHandler());
             return instance;
         }
-    private:
         StreamHandler(){}
 };
