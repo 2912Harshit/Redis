@@ -267,13 +267,13 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
     if(waiting_time==0){
         cv.wait(lock,[&](){return has_data=!(result=xreadHandler(parsed_request,true)).empty(); });
     }else{
-        auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(waiting_time));
-        has_data = cv.wait_until(lock, deadline, [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
+        
+        has_data = cv.wait_for(lock, chrono::milliseconds(waiting_time), [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
     }
     for(int i=0;i<streamKeys.size();i++){
         blocked_streams[streamKeys[i]].erase(make_tuple(streamIds[i],client_fd));
     }
-    cout<<"has data : "<<has_data<<endl;
+    cout<<"result size : "<<result.size()<<endl;
     if(!has_data){
         return {};
     }
