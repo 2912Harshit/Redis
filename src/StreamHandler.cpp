@@ -211,6 +211,9 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
 
 std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parseRangeQuery(std::string startId,std::string endId){
     unsigned long startMilliId{},startSeqId{},endMilliId{},endSeqId{};
+    if(startId=="$"){
+        startId=to_string(m_latestFirstId)+"-"+to_string(m_latestSecondId);
+    }
     cout<<"parse range query "<<startId<<" "<<endId<<endl;
     if(startId=="-"){
         startMilliId=0;
@@ -250,13 +253,6 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
 
           if(m_streams.count(streamName)){
             // cout<<"ye to h bhai"<<endl;
-            if(id=="$"){
-                {
-                    auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
-                    cout<<latestFirstId<<" "<<latestSecondId<<endl;
-                    id=to_string(latestFirstId)+"-"+to_string(latestSecondId);
-                }
-            }
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
