@@ -176,7 +176,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       string type=parsed_request[1];
       to_lowercase(type);
       if(type=="streams"){
-        deque<string> resp_keys=StreamHandler_ptr->xreadHandler(parsed_request,false);
+        deque<string> resp_keys=StreamHandler_ptr->xreadHandler(client_fd,parsed_request,false);
         send_array(client_fd,resp_keys,0,INT_MAX,true);
       }
       if(type=="block"){

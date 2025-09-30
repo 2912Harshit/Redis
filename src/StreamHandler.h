@@ -36,6 +36,7 @@ class Stream{
 class StreamHandler{
     public:
         std::unordered_map<std::string,std::unique_ptr<Stream>>m_streams;
+        std::unordered_map<int,std::unordered_map<std::string,std::string>>client_waiting_for_$_id;
 
         std::tuple<unsigned long,unsigned long>parseEntryId(const std::string &streamName,const std::string &entryId);
 
@@ -43,7 +44,7 @@ class StreamHandler{
 
         std::string xrangeHandler(std::deque<std::string>&parsed_request);
 
-        std::deque<std::string> xreadHandler(std::deque<std::string>&parsed_request,bool ignoreEmptyArray);
+        std::deque<std::string> xreadHandler(int client_fd,std::deque<std::string>&parsed_request,bool ignoreEmptyArray);
 
         std::deque<std::string> xreadBlocked$Handler(std::deque<std::string>&parsed_request);
 
