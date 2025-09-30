@@ -238,12 +238,13 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
         for(int i=0;i<streamKeys.size();i++){
           string streamName=streamKeys[i];
           string id=streamIds[i];
-          cout<<"xread handler keys ids"<<streamName<<" "<<id<<endl;
+          cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
           if(m_streams.count(streamName)){
             unique_lock<mutex>lock(m_stream_mutex);
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
+            cout<<"startFirstId : "<<startFirstId<<" startSId : "<<startSecondId+1<<endl;
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+xrangeHandler(dq));
           }else if(!ignoreEmptyArray){
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
