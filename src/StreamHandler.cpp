@@ -250,6 +250,14 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
 
           if(m_streams.count(streamName)){
             // cout<<"ye to h bhai"<<endl;
+            if(id=="$"){
+                {
+                    lock_guard<mutex>lock(m_stream_mutex);
+                    auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
+                    cout<<latestFirstId<<" "<<latestSecondId<<endl;
+                    id=to_string(latestFirstId)+"-"+to_string(latestSecondId);
+                }
+            }
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
@@ -277,14 +285,6 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
 
     auto [streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
     for(int i=0;i<streamKeys.size();i++){
-        if(streamIds[i]=="$"){
-            {
-                lock_guard<mutex>lock(m_stream_mutex);
-                auto [latestFirstId,latestSecondId]=m_streams[streamKeys[i]]->GetLatestId();
-                cout<<latestFirstId<<" "<<latestSecondId<<endl;
-                streamIds[i]=to_string(latestFirstId)+"-"+to_string(latestSecondId);
-            }
-        }
         cout<<"adding in blocked streams key :"<<streamKeys[i]<<" id : "<<streamIds[i]<<endl;
         blocked_streams[streamKeys[i]].insert(make_tuple(streamIds[i],client_fd));
     }
