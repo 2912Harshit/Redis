@@ -185,7 +185,8 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
         to_lowercase(type);
         if(type=="streams"){
           deque<string> resp_keys=StreamHandler::getInstance()->xreadBlockedHandler(client_fd,parsed_request);
-          send_array(client_fd,resp_keys,0,INT_MAX,true);
+          if(resp_keys.empty())send_null_array(client_fd);
+          else send_array(client_fd,resp_keys,0,INT_MAX,true);
         }
       }
     }
