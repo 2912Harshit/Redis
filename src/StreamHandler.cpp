@@ -76,7 +76,7 @@ std::string StreamHandler::xaddHandler(std::deque<std::string>&parsed_request){
     lock.unlock();
     {
         unique_lock<mutex>lock1(blocked_streams_mutex);
-        cout<<"hello"<<endl;
+        cout<<streamName<<" "<<blocked_streams[streamName].size()<<endl;
         for(auto &[required_id,client_fd]:blocked_streams[streamName]){
             cout<<streamName<<" "<<id<<" "<<required_id<<endl;
             if(required_id<id)clients_cvs[client_fd].notify_one();
