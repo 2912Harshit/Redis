@@ -248,6 +248,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
           }
         }
+        cout<<"xread handler resp keys size : "<<resp_keys.size()<<endl;
         return resp_keys;
 }
 
