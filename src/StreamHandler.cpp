@@ -238,6 +238,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
         auto[streamKeys,streamIds]=get_stream_keys_ids(parsed_request);
         deque<string>resp_keys;
         for(int i=0;i<streamKeys.size();i++){
+          unique_lock<mutex>lock(m_stream_mutex);
           string streamName=streamKeys[i];
           string id=streamIds[i];
           cout<<"xread handler keys ids "<<streamName<<" "<<id<<endl;
@@ -245,7 +246,6 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
 
           if(m_streams.count(streamName)){
             cout<<"ye to h bhai"<<endl;
-            unique_lock<mutex>lock(m_stream_mutex);
             auto [startFirstId,startSecondId,endFirstId,endSecondId]=m_streams[streamName]->parseRangeQuery(id,"+");
             lock.unlock();
             deque<string>dq={"streams",streamName,to_string(startFirstId)+"-"+to_string(startSecondId+1),"+"};
@@ -253,6 +253,7 @@ deque<string> StreamHandler::xreadHandler(deque<string>&parsed_request,bool igno
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+xrangeHandler(dq));
           }else if(!ignoreEmptyArray){
             resp_keys.push_back("*2\r\n"+create_bulk_string(streamName)+"*0\r\n");
+            lock.unlock();
           }
         }
         cout<<"xread handler resp keys size : "<<resp_keys.size()<<endl;
