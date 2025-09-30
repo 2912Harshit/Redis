@@ -12,6 +12,7 @@
 #include "resp_create.h"
 #include "resp_send.h"
 #include "StreamHandler.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -158,7 +159,8 @@ string handle_type_of(string key,std::shared_ptr<StreamHandler>&StreamHandler_pt
 pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_request){
   deque<string>streamKeys;
   deque<string>streamIds;
-  if(parsed_request[1]!="BLOCK"){
+  to_lowercase(parsed_request[1]);
+  if(parsed_request[1]!="block"){
     int n=(parsed_request.size()-2)/2+2;
     for(int i=2;i<(n);i++){
       streamKeys.push_back(parsed_request[i]);
@@ -174,7 +176,8 @@ pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_reques
   return {streamKeys,streamIds};
 }
 string get_stream_name(deque<string>&parsed_request){
-  if(parsed_request[1]!="BLOCK"){
+  to_lowercase(parsed_request[1]);
+  if(parsed_request[1]!="block"){
     return parsed_request[1];
   }else return parsed_request[3];
 }
