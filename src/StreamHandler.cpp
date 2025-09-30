@@ -212,7 +212,7 @@ std::map<std::string,std::map<std::string,std::string>>Stream::GetEntriesInRange
 std::tuple<unsigned long,unsigned long,unsigned long,unsigned long>Stream::parseRangeQuery(std::string startId,std::string endId){
     unsigned long startMilliId{},startSeqId{},endMilliId{},endSeqId{};
     if(startId=="$"){
-        startId=to_string(m_latestFirstId)+"-"+to_string(m_latestSecondId+1);
+        startId=to_string(m_latestFirstId)+"-"+to_string(m_latestSecondId);
     }
     cout<<"parse range query "<<startId<<" "<<endId<<endl;
     if(startId=="-"){
