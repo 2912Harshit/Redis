@@ -169,14 +169,14 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       send(client_fd,resp.c_str(),resp.size(),0);
     }
     else if(command=="xrange"){
-      string resp=StreamHandler::getInstance()->xrangeHandler(parsed_request);
+      string resp=StreamHandler_ptr->xrangeHandler(parsed_request);
       send(client_fd,resp.c_str(),resp.size(),0);
     }
     else if(command=="xread"){
       string type=parsed_request[1];
       to_lowercase(type);
       if(type=="streams"){
-        deque<string> resp_keys=StreamHandler::getInstance()->xreadHandler(parsed_request,false);
+        deque<string> resp_keys=StreamHandler_ptr->xreadHandler(parsed_request,false);
         send_array(client_fd,resp_keys,0,INT_MAX,true);
       }
       if(type=="block"){
@@ -184,7 +184,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
         type=parsed_request[3];
         to_lowercase(type);
         if(type=="streams"){
-          deque<string> resp_keys=StreamHandler::getInstance()->xreadBlockedHandler(client_fd,parsed_request);
+          deque<string> resp_keys=StreamHandler_ptr->xreadBlockedHandler(client_fd,parsed_request);
           if(resp_keys.empty())send_null_array(client_fd);
           else send_array(client_fd,resp_keys,0,INT_MAX,true);
         }
