@@ -265,7 +265,7 @@ deque<string> StreamHandler::xreadBlockedHandler(int client_fd,std::deque<std::s
 
     auto &cv=clients_cvs[client_fd];
     if(waiting_time==0){
-        cv.wait(lock,[&](){return !(result=xreadHandler(parsed_request,true)).empty(); });
+        cv.wait(lock,[&](){return has_data=!(result=xreadHandler(parsed_request,true)).empty(); });
     }else{
         auto deadline = chrono::steady_clock::now() + chrono::milliseconds((int)(waiting_time));
         has_data = cv.wait_until(lock, deadline, [&](){ return !(result=xreadHandler(parsed_request,true)).empty(); });
