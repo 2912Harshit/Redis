@@ -193,7 +193,6 @@ void handle_incr(int client_fd,string key){
     else send_simple_error(client_fd,"value is not an integer or out of range");
   }else{
     kv[key]="1";
-    send_integer(client_fd,1);
   }
   send_integer(client_fd,stoi(kv[key]));
 }
