@@ -12,12 +12,13 @@
 #include "utils.h"
 #include "StreamHandler.h"
 #include "resp_create.h"
+#include "TransactionHandler.h"
 
 using namespace std;
 
  
 
-void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_ptr)
+void handleResponse(int client_fd)
 {
   char buffer[1024];
 
@@ -35,7 +36,16 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
     cout<<"parsed_request: "<<parsed_request[0]<<" "<<client_fd<<endl;
     string command = parsed_request[0];
     to_lowercase(command);
-    if (command == "ping")
+    if(TransactionHandler_ptr->checkClient(client_fd) && command!="exec")
+    {
+      TransactionHandler_ptr->addRequest(client_fd,parsed_request);
+    }
+    else if(command=="exec")
+    {
+      TransactionHandler_ptr->handleExec(client_fd);
+    }
+
+    else if (command == "ping")
     {
       send_simple_string(client_fd, "PONG");
     }
@@ -193,8 +203,12 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
     }
     else if(command=="incr"){
       string key=parsed_request[1];
-      handle_incr(client_fd,key);
+      TransactionHandler_ptr->handleIncr(client_fd,key);
     }
+    else if(command=="multi"){
+      TransactionHandler_ptr->handleMulti(client_fd);
+    }
+    
 
   }
 }

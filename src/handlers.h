@@ -17,7 +17,6 @@ void remove_key(std::string key);
 std::string handle_type_of(std::string key,std::shared_ptr<StreamHandler>&StreamHandler_ptr);
 pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_request);
 string get_stream_name(deque<string>&parsed_request);
-void handle_incr(int client_fd,string key);
 
 
 

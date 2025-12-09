@@ -8,6 +8,8 @@
 #include <chrono>
 #include <queue>
 #include <set>
+#include "StreamHandler.h"
+#include "TransactionHandler.h"
 
 using namespace std;
 extern std::unordered_map<std::string, std::string> kv;
@@ -16,6 +18,8 @@ extern std::unordered_map<std::string, std::deque<std::string>> lists;
 extern std::unordered_map<int, std::condition_variable> clients_cvs;
 extern std::unordered_map<std::string, std::deque<int>> blocked_clients;
 extern unordered_map<string,set<tuple<string,int>>>blocked_streams;
+extern std::shared_ptr<StreamHandler>StreamHandler_ptr=std::make_shared<StreamHandler>();
+extern std::shared_ptr<TransactionHandler>TransactionHandler_ptr=std::make_shared<TransactionHandler>();
 
 extern std::mutex kv_mutex;
 extern std::mutex expiry_map_mutex;

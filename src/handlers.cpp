@@ -182,19 +182,5 @@ string get_stream_name(deque<string>&parsed_request){
   }else return parsed_request[3];
 }
 
-void handle_incr(int client_fd,string key){
-  bool key_exists=false;
-  {
-    lock_guard<mutex>lock(kv_mutex);
-    if(kv.count(key))key_exists=true;
-  }
-  if(key_exists){
-    if(kv[key][0]>='1' && kv[key][0]<='9'  && to_string(stoi(kv[key])).size()==kv[key].size())kv[key]=to_string(stoi(kv[key])+1);
-    else send_simple_error(client_fd,"value is not an integer or out of range");
-  }else{
-    kv[key]="1";
-  }
-  send_integer(client_fd,stoi(kv[key]));
-}
 
 
