@@ -1,4 +1,5 @@
 #include "TransactionHandler.h"
+#include "state.h"
 
 
 void TransactionHandler::handleIncr(int client_fd,string key){
