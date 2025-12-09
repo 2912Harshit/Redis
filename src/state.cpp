@@ -7,6 +7,8 @@ std::unordered_map<std::string, std::deque<std::string>> lists;
 std::unordered_map<int, std::condition_variable> clients_cvs;
 std::unordered_map<std::string, std::deque<int>> blocked_clients;
 unordered_map<string,set<tuple<string,int>>>blocked_streams;
+std::shared_ptr<StreamHandler>StreamHandler_ptr=std::make_shared<StreamHandler>();
+std::shared_ptr<TransactionHandler>TransactionHandler_ptr=std::make_shared<TransactionHandler>();
 
 
 
