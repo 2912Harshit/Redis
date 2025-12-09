@@ -1,5 +1,4 @@
 #pragma once
-#include "state.h"
 #include <string>
 #include <mutex>
 #include "resp_send.h"
