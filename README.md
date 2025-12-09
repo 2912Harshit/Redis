@@ -1,4 +1,4 @@
-## Redis Clone in C++ — Interview-Ready README
+## Redis Clone in C++ —  README
 
 This project implements a minimal Redis-compatible server in modern C++. It supports core commands (e.g., `PING`, `SET`, `GET`) and the Redis Serialization Protocol (RESP). The codebase is structured for clarity and interview discussion, with explicit concurrency control via threads, mutexes, and condition variables.
 
