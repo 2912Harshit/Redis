@@ -189,7 +189,7 @@ void handle_incr(int client_fd,string key){
     if(kv.count(key))key_exists=true;
   }
   if(key_exists){
-    if(to_string(stoi(kv[key])).size()==kv[key].size()))kv[key]=to_string(stoi(kv[key])+1);
+    if(to_string(stoi(kv[key])).size()==kv[key].size())kv[key]=to_string(stoi(kv[key])+1);
     else send_simple_error(client_fd,"value is not an integer or out of range");
   }else{
     kv[key]="1";

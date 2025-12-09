@@ -191,7 +191,7 @@ void handleResponse(int client_fd, std::shared_ptr<StreamHandler>&StreamHandler_
       }
 
     }
-    else if("incr"){
+    else if(command=="incr"){
       string key=parsed_request[1];
       handle_incr(client_fd,key);
     }
