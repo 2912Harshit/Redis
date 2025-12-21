@@ -34,7 +34,7 @@ string TransactionHandler::addRequest(int client_fd,deque<string>&parsed_request
 }
 
 string TransactionHandler::handleExec(int client_fd){
-    if(!checkClient(client_fd))return send_simple_string(client_fd,"EXEC without MULTI");
+    if(!checkClient(client_fd))return create_simple_error("EXEC without MULTI");
 }
 
 
