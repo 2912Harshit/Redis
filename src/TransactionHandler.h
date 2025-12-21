@@ -15,10 +15,10 @@ class TransactionHandler{
         unordered_set<int>m_client;
     public: 
 
-    void handleIncr(int client_fd,string key);
-    void handleMulti(int client_fd);
+    string handleIncr(string key);
+    string handleMulti(int client_fd);
     bool checkClient(int client_fd);
-    void addRequest(int client_fd,deque<string>&parsed_request);
-    void handleExec(int client_fd);
+    string addRequest(int client_fd,deque<string>&parsed_request);
+    string handleExec(int client_fd);
 
 };

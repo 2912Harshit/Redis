@@ -52,4 +52,3 @@ void send_simple_error(int client_fd,string msg){
   string resp_simple_error=create_simple_error(msg);
   send(client_fd,resp_simple_error.c_str(),resp_simple_error.size(),0);
 }
-

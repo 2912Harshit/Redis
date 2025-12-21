@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   // Uncomment this block to pass the first stage
   //
   start_expiry_cleaner();
-
+  map_handlers();
   while (true)
   {
     int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);

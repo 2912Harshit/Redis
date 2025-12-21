@@ -18,6 +18,9 @@ extern unordered_map<string,set<tuple<string,int>>>blocked_streams;
 extern std::shared_ptr<StreamHandler>StreamHandler_ptr;
 extern std::shared_ptr<TransactionHandler>TransactionHandler_ptr;
 
+extern std::unordered_map<std::string,string(*)(int,deque<string>&)>commandMap;
+
+
 extern std::mutex kv_mutex;
 extern std::mutex expiry_map_mutex;
 extern std::mutex lists_mutex;
