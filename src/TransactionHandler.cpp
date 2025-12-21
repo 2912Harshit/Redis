@@ -30,7 +30,7 @@ bool TransactionHandler::checkClient(int client_fd){
 
 string TransactionHandler::addRequest(int client_fd,deque<string>&parsed_request){
     m_transaction[client_fd].push(parsed_request);
-    return send_simple_string("QUEUED");
+    return create_simple_string("QUEUED");
 }
 
 string TransactionHandler::handleExec(int client_fd){
