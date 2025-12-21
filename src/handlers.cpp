@@ -73,7 +73,7 @@ string handle_lpop(int client_fd,std::deque<std::string> &parsed_request)
           lock_guard<mutex> lock1(lists_mutex);
           string str = lists[key].front();
           lists[key].pop_front();
-          return create_simple_string(str);
+          return create_bulk_string(str);
       }
       else if (key_exists && no_of_removals > 1)
       {
