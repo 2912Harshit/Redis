@@ -173,15 +173,15 @@ string handle_type_of(int client_fd,deque<string>&parsed_request)
       string key=parsed_request[1];
   {
     lock_guard<mutex>lock(kv_mutex);
-    if(kv.count(key))return "string";
+    if(kv.count(key))return create_simple_string("string");
   }
   {
     lock_guard<mutex>lock(lists_mutex);
-    if(lists.count(key))return "list";
+    if(lists.count(key))return create_simple_string("list");
   }
   {
     lock_guard<mutex>lock(m_stream_mutex);
-    if(StreamHandler_ptr->m_streams.count(key))return "stream";
+    if(StreamHandler_ptr->m_streams.count(key))return create_simple_string("stream");
   }
   // set zset hash vectorset
   return "none";
