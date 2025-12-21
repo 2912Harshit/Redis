@@ -184,7 +184,7 @@ string handle_type_of(int client_fd,deque<string>&parsed_request)
     if(StreamHandler_ptr->m_streams.count(key))return create_simple_string("stream");
   }
   // set zset hash vectorset
-  return "none";
+  return create_simple_string("none");
 }
 pair<deque<string>,deque<string>>get_stream_keys_ids(deque<string>&parsed_request){
   deque<string>streamKeys;
