@@ -222,7 +222,7 @@ string get_stream_name(deque<string>&parsed_request){
 
 
 string handle_ping(int client_fd,deque<string>& parsed_request){
-  return "PONG";
+  return create_simple_string("PONG");
 };
 
 
