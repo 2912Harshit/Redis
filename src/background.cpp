@@ -43,6 +43,7 @@ void map_handlers(){
   commandMap["xread"]=&handle_xread;
   commandMap["incr"]=&handle_incr;
   commandMap["multi"]=&handle_multi;
+  commandMap["exec"]=&handle_exec;
 }
 
 

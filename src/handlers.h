@@ -29,6 +29,7 @@ string handle_xrange(int client_fd,deque<string>&parsed_request);
 string handle_xread(int client_fd,deque<string>&parsed_request);
 string handle_incr(int client_fd,deque<string>&parsed_request);
 string handle_multi(int client_fd,deque<string>&parsed_request);
+string handle_exec(int client_fd,deque<string>&parsed_request);
 
 
 
