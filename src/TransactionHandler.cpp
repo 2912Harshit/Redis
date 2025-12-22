@@ -1,6 +1,7 @@
 #include "TransactionHandler.h"
 #include "state.h"
 #include "resp_create.h"
+#include "utils.h"
 
 
 string TransactionHandler::handleIncr(string key){
@@ -53,7 +54,7 @@ string TransactionHandler::handleExec(int client_fd){
           deque<string>&parsed_request=queued_requests.front();
           cout<<"hi"<<endl;
           string command=parsed_request[0];
-          cout<<command<<endl;
+          to_lowercase(command);
           resp.append(commandMap[command](client_fd,parsed_request));
           cout<<"hihi"<<endl;
           queued_requests.pop();
