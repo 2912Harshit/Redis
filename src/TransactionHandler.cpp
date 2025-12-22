@@ -40,10 +40,11 @@ string TransactionHandler::handleExec(int client_fd){
       
       string resp="";
       int n=m_transaction[client_fd].size();
+      
       if(n==0){
         resp=create_empty_array();
       }else{
-        cout<<"here"<<endl;
+        cout<<"here : "<<n<<endl;
         resp="*"+to_string(n)+"\r\n";
         cout<<"resp : "<<resp<<endl;
         queue<deque<string> >&queued_requests=m_transaction[client_fd];
