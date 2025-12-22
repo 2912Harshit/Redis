@@ -49,10 +49,12 @@ string TransactionHandler::handleExec(int client_fd){
         cout<<"resp : "<<resp<<endl;
         queue<deque<string> >&queued_requests=m_transaction[client_fd];
         while(!queued_requests.empty()){
+          cout<<"hello"<<endl;
           deque<string>&parsed_request=queued_requests.front();
           string command=parsed_request[0];
           resp.append(commandMap[command](client_fd,parsed_request));
           queued_requests.pop();
+          cout<<resp<<endl;
         }
       }
       m_transaction.erase(client_fd);
