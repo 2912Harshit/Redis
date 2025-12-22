@@ -350,6 +350,10 @@ string handle_multi(int client_fd,deque<string>&parsed_request){
       return TransactionHandler_ptr->handleMulti(client_fd);
 }
 
+string handle_exec(int client_fd,deque<string>&parsed_request){
+  return TransactionHandler_ptr->handleExec(client_fd);
+}
+
 
 
 
