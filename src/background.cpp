@@ -44,6 +44,7 @@ void map_handlers(){
   commandMap["incr"]=&handle_incr;
   commandMap["multi"]=&handle_multi;
   commandMap["exec"]=&handle_exec;
+  commandMap["discard"]=&handle_discard;
 }
 
 

@@ -20,5 +20,6 @@ class TransactionHandler{
     bool checkClient(int client_fd);
     string addRequest(int client_fd,deque<string>&parsed_request);
     string handleExec(int client_fd);
+    string handleDiscard(int client_fd);
 
 };

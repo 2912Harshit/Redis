@@ -61,5 +61,14 @@ string TransactionHandler::handleExec(int client_fd){
     }
 }
 
+string TransactionHandler::handleDiscard(int client_fd){
+  if(!checkClient(client_fd))return create_simple_error("DISCARD without MULTI");
+  else{
+    m_client.erase(client_fd);
+    m_transaction.erase(client_fd);
+    return create_simple_string("OK");
+  }
+}
+
 
 
