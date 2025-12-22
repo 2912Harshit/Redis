@@ -53,7 +53,7 @@ string TransactionHandler::handleExec(int client_fd){
       }
       m_transaction.erase(client_fd);
       m_client.erase(client_fd);
-        cout<<resp<<endl;
+        cout<<"resp : "<<resp<<endl;
       return resp;
     }
 }
