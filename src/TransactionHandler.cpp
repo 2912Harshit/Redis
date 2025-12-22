@@ -39,7 +39,7 @@ string TransactionHandler::handleExec(int client_fd){
     else{
       
       string resp="";
-      int n=m_transaction[client_fd].size();
+      int n=int(m_transaction[client_fd].size());
       
       if(n==0){
         resp=create_empty_array();
