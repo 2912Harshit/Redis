@@ -36,10 +36,12 @@ string TransactionHandler::addRequest(int client_fd,deque<string>&parsed_request
 string TransactionHandler::handleExec(int client_fd){
     if(!checkClient(client_fd))return create_simple_error("EXEC without MULTI");
     else{
+      cout<<"here"<<endl;
       string resp="";
       int n=m_transaction[client_fd].size();
-      if(n==0)resp=create_empty_array();
-      else{
+      if(n==0){
+        resp=create_empty_array();
+      }else{
         resp="*"+to_string(n)+"\r\n";
         queue<deque<string>>&queued_requests=m_transaction[client_fd];
         while(!queued_requests.empty()){
