@@ -50,6 +50,7 @@ string TransactionHandler::handleExec(int client_fd){
         while(!queued_requests.empty()){
           deque<string>&parsed_request=queued_requests.front();
           string command=parsed_request[0];
+          to_lowercase(command);
           resp.append(commandMap[command](client_fd,parsed_request));
           queued_requests.pop();
         }
