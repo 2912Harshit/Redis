@@ -50,6 +50,7 @@ string TransactionHandler::handleExec(int client_fd){
           resp.append(commandMap[command](client_fd,parsed_request));
           queued_requests.pop();
         }
+        cout<<resp<<endl;
       }
       m_transaction.erase(client_fd);
       m_client.erase(client_fd);
