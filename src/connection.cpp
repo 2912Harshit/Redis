@@ -39,7 +39,7 @@ void handleResponse(int client_fd)
     string response="";
 
 
-    if(TransactionHandler_ptr->checkClient(client_fd)){
+    if(TransactionHandler_ptr->checkClient(client_fd) && command!="exec"){
       response=TransactionHandler_ptr->addRequest(client_fd,parsed_request);
     }
     else response=commandMap[command](client_fd,parsed_request);
