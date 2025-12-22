@@ -41,10 +41,12 @@ string TransactionHandler::handleExec(int client_fd){
       if(n==0)resp=create_empty_array();
       else{
         resp="*"+to_string(n)+"\r\n";
-        for(int i=0;i<n;i++){
-          int command=m_transaction[client_fd][i][0];
-          deque<string>&parsed_request=m_transaction[client_fd][i];
+        queue<deque<string>>&queued_requests=m_transaction[client_fd];
+        while(!queued_requests.empty()){
+          deque<string>&parsed_request=queue.front();
+          int command=parsed_request[0];
           resp.append(commandMap[command](client_fd,parsed_request));
+          q.pop();
         }
       }
       m_transaction.erase(client_fd);
