@@ -34,7 +34,6 @@ string TransactionHandler::addRequest(int client_fd,deque<string>&parsed_request
 }
 
 string TransactionHandler::handleExec(int client_fd){
-      cout<<"here"<<endl;
     if(!checkClient(client_fd))return create_simple_error("EXEC without MULTI");
     else{
       string resp="";
