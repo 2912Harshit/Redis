@@ -44,7 +44,7 @@ string TransactionHandler::handleExec(int client_fd){
         queue<deque<string>>&queued_requests=m_transaction[client_fd];
         while(!queued_requests.empty()){
           deque<string>&parsed_request=queued_requests.front();
-          int command=parsed_request[0];
+          string command=parsed_request[0];
           resp.append(commandMap[command](client_fd,parsed_request));
           queued_requests.pop();
         }
