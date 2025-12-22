@@ -43,9 +43,10 @@ string TransactionHandler::handleExec(int client_fd){
       if(n==0){
         resp=create_empty_array();
       }else{
-      cout<<"here"<<endl;
+        cout<<"here"<<endl;
         resp="*"+to_string(n)+"\r\n";
-        queue<deque<string>>&queued_requests=m_transaction[client_fd];
+        cout<<"resp : "<<resp<<endl;
+        queue<deque<string> >&queued_requests=m_transaction[client_fd];
         while(!queued_requests.empty()){
           deque<string>&parsed_request=queued_requests.front();
           string command=parsed_request[0];
@@ -55,7 +56,6 @@ string TransactionHandler::handleExec(int client_fd){
       }
       m_transaction.erase(client_fd);
       m_client.erase(client_fd);
-        cout<<"resp : "<<resp<<endl;
       return resp;
     }
 }
