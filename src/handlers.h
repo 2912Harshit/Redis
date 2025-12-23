@@ -32,5 +32,11 @@ string handle_multi(int client_fd,deque<string>&parsed_request);
 string handle_exec(int client_fd,deque<string>&parsed_request);
 string handle_discard(int client_fd,deque<string>&parsed_request);
 
+void handle_subscribe(int client_fd,deque<string>&parsed_request);
+void handle_unsubscribe(int client_fd,deque<string>&parsed_request);
+void handle_publish(int client_fd,deque<string>&parsed_request);
+void handle_subscriber_ping(int client_fd,deque<string>&parsed_request);
+
+
 
 

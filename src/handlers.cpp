@@ -358,6 +358,25 @@ string handle_discard(int client_fd,deque<string>&parsed_request){
   return TransactionHandler_ptr->handleDiscard(client_fd);
 }
 
+void handle_subscribe(int client_fd,deque<string>&parsed_request){
+  string channel=parsed_request[1];
+  PubSubHandler_ptr->subscribe(client_fd,channel);
+}
+void handle_unsubscribe(int client_fd,deque<string>&parsed_request){
+  string channel=parsed_request[1];
+  PubSubHandler_ptr->unsubscribe(client_fd,channel);
+}
+void handle_publish(int client_fd,deque<string>&parsed_request){
+  string channel=parsed_request[1];
+  string msg=parsed_request[2];
+  PubSubHandler_ptr->publish(client_fd,channel,msg);
+}
+void handle_subscriber_ping(int client_fd,deque<string>&parsed_request){
+  PubSubHandler_ptr->ping(client_fd);
+}
+
+
+
 
 
 

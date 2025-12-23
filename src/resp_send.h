@@ -3,6 +3,8 @@
 #include <string>
 #include <deque>
 #include <climits>
+#include <sys/socket.h>
+
 
 void send_simple_string(int client_fd, std::string msg);
 void send_bulk_string(int client_fd, std::string msg);

@@ -3,6 +3,7 @@
 #include "stdc++.h"
 #include "StreamHandler.h"
 #include "TransactionHandler.h"
+#include "Channel.h"
 
 using namespace std;
 
@@ -17,8 +18,10 @@ extern std::unordered_map<std::string, std::deque<int>> blocked_clients;
 extern unordered_map<string,set<tuple<string,int>>>blocked_streams;
 extern std::shared_ptr<StreamHandler>StreamHandler_ptr;
 extern std::shared_ptr<TransactionHandler>TransactionHandler_ptr;
+extern std::shared_ptr<PubSubHandler>PubSubHandler_ptr;
 
 extern std::unordered_map<std::string,string(*)(int,deque<string>&)>commandMap;
+extern std::unordered_map<std::string,void(*)(int,deque<string>&)>pubSubCommandMap;
 
 
 extern std::mutex kv_mutex;

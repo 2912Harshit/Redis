@@ -1,6 +1,5 @@
 #include <string>
 #include <deque>
-#include <sys/socket.h>
 #include <climits>
 #include "resp_send.h"
 #include "resp_create.h"

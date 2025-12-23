@@ -38,14 +38,21 @@ void handleResponse(int client_fd)
     to_lowercase(command);
     string response="";
 
+    if(pubSubCommandMap.count(command) || PubSubHandler_ptr->checkClient(client_fd)){
+      if(pubSubCommandMap.count(command)){
+        pubSubCommandMap[command](client_fd,parsed_request);
+        continue;
+      }else{
+        response=create_simple_error("Can't execute '"+command+"': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context");
+      }
+    }else{   
+      if(command!="exec" && command!="discard" && TransactionHandler_ptr->checkClient(client_fd)){
+        response=TransactionHandler_ptr->addRequest(client_fd,parsed_request);
+      }
+      else response=commandMap[command](client_fd,parsed_request);
 
-    if(command!="exec" && command!="discard" && TransactionHandler_ptr->checkClient(client_fd)){
-      response=TransactionHandler_ptr->addRequest(client_fd,parsed_request);
+      send(client_fd,response.c_str(),response.size(),0);
     }
-    else response=commandMap[command](client_fd,parsed_request);
-
-    send(client_fd,response.c_str(),response.size(),0);
-
 
     // if(TransactionHandler_ptr->checkClient(client_fd) && command!="exec")
     // {

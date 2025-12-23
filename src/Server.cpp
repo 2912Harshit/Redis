@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
   // Uncomment this block to pass the first stage
   //
-  start_expiry_cleaner();
+  start_background_worker();
   map_handlers();
   while (true)
   {

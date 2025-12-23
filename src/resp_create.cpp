@@ -11,7 +11,7 @@ string create_simple_string(string msg)
 {
   return "+" + msg + "\r\n";
 }
-string create_bulk_string(string &msg)
+string create_bulk_string(string msg)
 {
   return "$" + to_string(msg.size()) + "\r\n" + msg + "\r\n";
 }
