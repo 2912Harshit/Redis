@@ -10,7 +10,7 @@ bool Channel::subscribe(int client_fd,int sub_count){
         lock_guard<mutex>lock(channel_mutex);
         if(subscribers.insert(client_fd).second){
             sub_count++;
-            ret=false;
+            ret=true;
         }
     }
     response.push_back(create_integer(sub_count));
