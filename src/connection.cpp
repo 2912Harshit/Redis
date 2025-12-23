@@ -38,7 +38,7 @@ void handleResponse(int client_fd)
     to_lowercase(command);
     string response="";
 
-    if(pubSubCommandMap.count(command) || PubSubHandler_ptr->checkClient(client_fd)){
+    if(command=="subscribe" || PubSubHandler_ptr->checkClient(client_fd)){
       if(pubSubCommandMap.count(command)){
         pubSubCommandMap[command](client_fd,parsed_request);
         continue;
