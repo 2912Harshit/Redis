@@ -118,7 +118,7 @@ void map_handlers(){
   pubSubCommandMap["subscribe"]=&handle_subscribe;
   pubSubCommandMap["unsubscribe"]=&handle_unsubscribe;
   pubSubCommandMap["publish"]=&handle_publish;
-  // pubSubCommandMap["ping"]=&handle_subscriber_ping;
+  pubSubCommandMap["ping"]=&handle_subscriber_ping;
 
 }
 
