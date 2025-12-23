@@ -11,7 +11,7 @@ std::unordered_map<std::string, std::deque<int>> blocked_clients;
 unordered_map<string,set<tuple<string,int>>>blocked_streams;
 std::shared_ptr<StreamHandler>StreamHandler_ptr=std::make_shared<StreamHandler>();
 std::shared_ptr<TransactionHandler>TransactionHandler_ptr=std::make_shared<TransactionHandler>();
-extern std::shared_ptr<PubSubHandler>PubSubHandler_ptr=std::make_shared<PubSubHandler>();
+std::shared_ptr<PubSubHandler>PubSubHandler_ptr=std::make_shared<PubSubHandler>();
 
 std::unordered_map<std::string,string(*)(int,deque<string>&)>commandMap;
 std::unordered_map<std::string,void(*)(int,deque<string>&)>pubSubCommandMap;
