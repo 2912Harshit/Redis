@@ -52,14 +52,6 @@ void Channel::publish(int client_fd,string& msg) {
 }
 
 
-// void Channel::publish(string& msg){
-//     {
-//         lock_guard<mutex>lock(channel_mutex);
-//         for(int client_fd : subscribers){
-//         }
-//     }
-// }
-
 int Channel::getSize(){
     return subscribers.size();
 }
