@@ -52,8 +52,8 @@ void handleResponse(int client_fd)
       }
       else response=commandMap[command](client_fd,parsed_request);
 
-      send(client_fd,response.c_str(),response.size(),0);
     }
+    send(client_fd,response.c_str(),response.size(),0);
 
     // if(TransactionHandler_ptr->checkClient(client_fd) && command!="exec")
     // {
