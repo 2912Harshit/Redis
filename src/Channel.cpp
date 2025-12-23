@@ -112,7 +112,7 @@ void PubSubHandler::publish(int client_fd,string& ch_name,string& msg){
 }
 
 bool PubSubHandler::checkClient(int client_fd){
-    return clients_sub_count.count(client_fd);
+    return clients_sub_count[client_fd]>0;
 }
 
 void PubSubHandler::ping(int client_fd){
