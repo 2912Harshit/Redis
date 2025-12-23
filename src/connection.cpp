@@ -43,7 +43,8 @@ void handleResponse(int client_fd)
         pubSubCommandMap[command](client_fd,parsed_request);
         continue;
       }else{
-        response=create_simple_error("Can't execute '"+command+"': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context");
+        string msg="Can't execute '"+command+"': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context";
+        response=create_simple_error(msg);
       }
     }else{   
       if(command!="exec" && command!="discard" && TransactionHandler_ptr->checkClient(client_fd)){
