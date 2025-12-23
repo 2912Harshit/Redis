@@ -91,7 +91,7 @@ void PubSubHandler::unsubscribe(int client_fd,string& ch_name){
         }
     }
     ch=channels[ch_name].get();
-    erase=ch->subscribe(client_fd,clients_sub_count[client_fd]);
+    erase=ch->unsubscribe(client_fd,clients_sub_count[client_fd]);
     if(erase){
         lock_guard<mutex>lock(pubsubhandler_mutex);
         clients_sub_count[client_fd]--;
